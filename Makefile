@@ -1,6 +1,6 @@
 .PHONY: default all clean doc lib test
 
-default: code doc
+default: lib doc
 
 all: default
 

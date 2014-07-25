@@ -52,27 +52,30 @@ typedef struct
     Graph *graph;
     VertexInfo **v_info;
 
-    // stores the nodes of different levels;
-    // a single node will be in at most two such levels (one even, one odd).
+    /// stores the nodes of different levels;
+    /// a single node will be in at most two such levels (one even, one odd).
     NodeList **levels;
 
-    // list of bridges for different tenacities
-    // bridges in bridge[i] have tenacity 2 i + 1
+  /// list of bridges for different tenacities
+    /// bridges in bridge[i] have tenacity 2 i + 1
     EdgeList **bridges;
-    // list of petals
+  /// list of petals
     PointerList *petals;
     // info to be used during ddfs search
     // DDFSInfo *ddfs;
 
-    // current stage and level of the algorithm
+    /// current stage and level of the algorithm
     uint stage, level;
 
-#ifdef PRINT_MV_PROGRESS
+
     EdgeList *redEdges, *blueEdges;
     Edge currentDDFSBridge;
     EdgeList *aug_path;
     // EdgeList *oldBridges;
-#endif
+    /// Defines whether to output dot files or not
+    bool output;
+  /// folder to write to if output is enabled
+  char* outpath;
 } MVInfo;
 
 MVInfo *MVInfo_init(Graph *g);
@@ -80,10 +83,10 @@ void MVInfo_delete(MVInfo *mvi);
 void MVInfo_next_stage(MVInfo *mvi);
 void MVInfo_next_level(MVInfo *mvi);
 
-#ifdef PRINT_MV_PROGRESS
+
 void MVInfo_print_graphviz(MVInfo *mvi, char *filename);
 void MVInfo_print_contents(MVInfo *mvi, char *filename);
-#endif
+
 
 MVInfo *MVInfo_init_file(char *filename);
 

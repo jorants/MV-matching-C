@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define PRINT_MV_PROGRESS // prints progress of mv algorithm as graphviz dot files
+//#define PRINT_MV_PROGRESS // prints progress of mv algorithm as graphviz dot files
 
 
 typedef unsigned int uint;
