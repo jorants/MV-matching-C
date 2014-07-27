@@ -94,7 +94,7 @@ MVInfo *MVInfo_init(Graph *g)
   mvi->stage = -1;
   MVInfo_next_stage(mvi);
   mvi->level = 0;
-
+  mvi->output = false;
   return mvi;
 }
 
@@ -140,7 +140,6 @@ void MVInfo_delete(MVInfo *mvi)
     EdgeList_delete(mvi->blueEdges);
     EdgeList_delete(mvi->aug_path);
   }
-
   free(mvi);
 }
 
@@ -176,8 +175,8 @@ void MVInfo_next_stage(MVInfo *mvi)
 
   if(mvi->output){
     // EdgeList_erase(mvi->oldBridges);
-    EdgeList_erase(mvi->redEdges);
-    EdgeList_erase(mvi->blueEdges);
+    //EdgeList_erase(mvi->redEdges);
+    //EdgeList_erase(mvi->blueEdges);
   }
 
 }
@@ -382,7 +381,7 @@ void MVInfo_print_graphviz(MVInfo *mvi, char *filename)
 
 // this is NOT a safe function (badly formatted input files
 // may lead to writing overflow
-MVInfo *MVInfo_init_file(char *filename)
+MVInfo *MVInfo_init_file_simple(char *filename)
 {
   FILE *fp;
   fp = fopen(filename, "r");
@@ -406,6 +405,35 @@ MVInfo *MVInfo_init_file(char *filename)
         }
     }
   mvi->stage = -1;
+  mvi->output = false;
+  MVInfo_next_stage(mvi);
+
+  fclose(fp);
+
+  return mvi;
+}
+
+
+MVInfo *MVInfo_init_file(char *filename)
+{
+  FILE *fp;
+  fp = fopen(filename, "r");
+
+  uint size,numedge;
+
+  fscanf(fp, "p edge %d %d\n", &size,&numedge);
+
+  Graph *g = Graph_init(size);
+  MVInfo *mvi = MVInfo_init(g);
+  
+  char line[30];
+  uint i, j,tmp;
+  while ((fscanf(fp, "e %i %i %i\n", &i, &j, &tmp)) != EOF)
+    { 
+      Graph_add_edge(g, i-1, j-1);
+    }
+  mvi->stage = -1;
+  mvi->output = false;
   MVInfo_next_stage(mvi);
 
   fclose(fp);

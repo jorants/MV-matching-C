@@ -1,2 +1,6 @@
 all:
-	gcc -o mvmatching mvmatching.c -L ../bin -lmv
+	gcc -o testmatching testgraphs.c -L ../bin -lmv -ggdb
+	gcc -o test test.c -L ../bin -lmv -ggdb
+
+clean:
+	rm mvwatching test testmatching

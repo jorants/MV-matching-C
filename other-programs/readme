@@ -1,0 +1,6 @@
+
+The subdirectories contain solvers for cardinality matching
+
+solver-1  Gabow's algorithm, implemented by E. Rothberg
+solver-2  Micali-Vazirani, implemented by S. Crocker
+solver-3  Micali-Vazirano, implemented by R. B. Mattingly and N. P. Ritchey

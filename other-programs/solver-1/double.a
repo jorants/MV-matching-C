@@ -1,0 +1,15 @@
+# double edges and put problem line in front 
+# the -1, 555 and 999 are sorting indices 
+# the 1 is cost (for unweighted matching)
+
+$1 == "p"  {print "-1", $3, 2*$4}
+$1 == "e"  {src = $2; dst = $3; cost = $4;
+            degree[src]++;
+            degree[dst]++;
+
+            print src, 999, dst, 1;
+            print dst, 999, src, 1;
+	}
+END { for (i in degree) { print i, 555, degree[i], 0, 0 } 
+}
+

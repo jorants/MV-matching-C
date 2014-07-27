@@ -12,7 +12,7 @@ all: default
 
 .PHONY: default
 default: $(OBJECTS)
-	rm -f libmv.a
+	rm -f ../bin/libmv.a
 	ar -cvq ../bin/libmv.a $^
 
 .PHONY: clean

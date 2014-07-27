@@ -1,5 +1,5 @@
 /** @file
- * Contains the main algorithem
+ * Contains the main algoritem
  *
  */
 #ifndef MV_H
@@ -29,6 +29,7 @@ void MV_Augment(MVInfo *mvi, DDFSInfo *path);
 
 EdgeList *MV_MaximumCardinalityMatching(Graph *g);
 EdgeList *MV_MaximumCardinalityMatching_(MVInfo *mvi);
+
 
 
 
