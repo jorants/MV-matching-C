@@ -5,8 +5,8 @@ import pylab
 
 data = map(lambda x: map(int,x.split(" ")),open("data","r").read().split("\n"))
 
-x = map(lambda i: i[2],data)
-y = map(lambda i: i[3],data)
+x = map(lambda i: i[0],data)
+y = map(lambda i: i[4],data)
 
 nx = range(max(x)+1)
 ny = [[] for i in range(max(x)+1)]

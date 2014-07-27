@@ -56,14 +56,17 @@ int main () // entry point of the program
         }
       // otherwise, it was initialised correctly. let's print it on the console:
       int n,m,a;
+
       int hits = sscanf(pent->d_name , "%i_%i_%i.txt", &m,&n,&a);
+
       if(hits == 3){
 	char *fullpath = malloc( strlen(pent->d_name) + 9);
 	sprintf(fullpath, "graphs/%s",  pent->d_name);
        long time;
        int res =  getmatchnum(fullpath,  &time);
        free(fullpath);
-       printf ("%i %i %i %i %li\n", m,n,a,res,time);
+       if(m!=res)
+         printf ("%i %i %i %i %li\n", m,n,a,res,time);
       }
     }
 

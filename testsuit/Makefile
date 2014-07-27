@@ -3,4 +3,4 @@ all:
 	gcc -o test test.c -L ../bin -lmv -ggdb
 
 clean:
-	rm mvwatching test testmatching
+	rm -f mvwatching test testmatching

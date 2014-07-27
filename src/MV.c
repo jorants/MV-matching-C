@@ -729,11 +729,31 @@ NodeList *MV_first_base_to_entry_path(MVInfo *mvi, uint first_base, uint entry,
               // p is set to the path straight from the base to
               // the other side of the bridge
               // and then we add our vertex
-              NodeList *p = MV_base_to_entry_path(mvi, first_base,
-                                                  other_bridge_vertex, other_bridge_vertex_min_level);
 
-              NodeList_add(p, bridge_vertex); // bridge_vertex == entry
-              return p;
+              VertexInfo * other_info = mvi->v_info[other_bridge_vertex];
+
+              uint other_bridge_ov_vertex = (
+                                          other_info->ddfs_color == blue ?
+                                          other_info->petal->rednode :
+                                          other_info->petal->bluenode);
+              if(other_bridge_ov_vertex == entry){
+               // p is set to the path straight from the base to
+               // the other side of the bridge
+               // and then we add our vertex
+   	    
+                NodeList *p = MV_base_to_entry_path(mvi, first_base,
+                                                    other_bridge_vertex, other_bridge_vertex_min_level );
+                NodeList_add(p, bridge_vertex); // bridge_vertex == entry
+                return p;
+	    }else{
+	    //other bridge after this:
+                NodeList *p = MV_base_to_entry_path(mvi, first_base,
+                                                    other_bridge_vertex, parity+1);
+                NodeList_add(p, bridge_vertex); // bridge_vertex == entry
+                return p;
+
+	  }
+
             }
           // if we haven't yet reached the bridge vertex, we must
           // go up the ddfs_predecessor chain
@@ -852,9 +872,6 @@ void MV_Augment(MVInfo *mvi, DDFSInfo *ddfsi)
 
   itr = blue_path->first;
 
-
-
-
   while (itr)
     {
       uint v1 = itr->value;
@@ -933,7 +950,8 @@ EdgeList *MV_MaximumCardinalityMatching_(MVInfo *mvi)
           }
           EdgeListIterator *eitr = mvi->bridges[mvi->level]->first;
           while (eitr)
-            {
+            { 
+              int i;
               Edge e = eitr->value;
               found = MV_DDFS(mvi, e) || found;
               eitr = eitr->next;

@@ -10,7 +10,7 @@ main()
   uint i, j;
 
 
-  MVInfo *mvi = MVInfo_init_file("g_error.txt");
+  MVInfo *mvi = MVInfo_init_file("error2.txt");
 
 
   EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);

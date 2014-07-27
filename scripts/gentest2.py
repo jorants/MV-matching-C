@@ -25,7 +25,7 @@ def gengraph(v,e,k):
       else:
          E+=[edge]
          break
-  writeGraph(V,E, "out/%03i_%03i_%03i.txt" %(v,e,k))
+  writeGraph(V,E, "out/%i_%i_%i.txt" %(v,e,k))
   return True
 
 

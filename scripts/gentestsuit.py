@@ -98,10 +98,10 @@ def gengraph(matchedn,unmatchedn, addedge):
 
 
 
-for m in range(20):
+for m in range(5):
  print(m)
- for n in range(30):
-  for a in range(400):
+ for n in range(5):
+  for a in range(10):
    if not gengraph(m,n,a):
      break
 

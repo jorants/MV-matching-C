@@ -15,11 +15,11 @@ data = data[1:]
 E = []
 for x in data:
   if len(x)>2:
-    E+=[(x[1],x[2])]
+    E+=[(int(x[1])-1,int(x[2])-1)]
 
 
 fpout.write("%i\n\n" % (V))
 for e in E:
-  fpout.write("%s -- %s\n" % (e[0],e[1]))
+  fpout.write("%s - %s\n" % (e[0],e[1]))
 
 fpout.close()

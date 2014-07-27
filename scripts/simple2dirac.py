@@ -14,11 +14,11 @@ E = []
 for x in data:
   line = list(filter(len,x.split(" ")))
   if len(line)>2:
-    E+=[(line[0],line[2])]
+    E+=[(int(line[0]),int(line[2]))]
 
 
 fpout.write("p edge %i %i\n" % (V,len(E)))
 for e in E:
-  fpout.write("e %s %s 1\n" % (e[0],e[1]))
+  fpout.write("e %s %s 1\n" % (e[0]+1,e[1]+1))
 
 fpout.close()
