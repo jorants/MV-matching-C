@@ -13,7 +13,7 @@
  * attributes predecessors, and marks edges as bridges
  * @param mvi Basic algoritmic information
  */
-void MV_BFS_step(MVInfo *mvi);
+void MV_BFS_step (MVInfo * mvi);
 
 /**
  * does a DDFS to find an augmenting path by  looking from both sides of a bridge. 
@@ -21,14 +21,14 @@ void MV_BFS_step(MVInfo *mvi);
  * @param mvi Basic algoritmic information
  * @param bridge The bridge found in the previous stage from which to look for a augmenting path
  */
-bool MV_DDFS(MVInfo *mvi, Edge bridge);
+bool MV_DDFS (MVInfo * mvi, Edge bridge);
 
 
 
-void MV_Augment(MVInfo *mvi, DDFSInfo *path);
+void MV_Augment (MVInfo * mvi, DDFSInfo * path);
 
-EdgeList *MV_MaximumCardinalityMatching(Graph *g);
-EdgeList *MV_MaximumCardinalityMatching_(MVInfo *mvi);
+EdgeList *MV_MaximumCardinalityMatching (Graph * g);
+EdgeList *MV_MaximumCardinalityMatching_ (MVInfo * mvi);
 
 
 

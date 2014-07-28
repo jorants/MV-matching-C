@@ -247,7 +247,7 @@ typedef struct
     Graph *graph;
     VertexInfo **v_info;
 
-
+  _Bool pathc;
 
     NodeList **levels;
 
@@ -266,7 +266,6 @@ typedef struct
     EdgeList *redEdges, *blueEdges;
     Edge currentDDFSBridge;
     EdgeList *aug_path;
-
 
     _Bool output;
 

@@ -8,39 +8,42 @@
 uint step = 0;
 char filename[200];
 
-char *currStepPrintFile(char * path)
+char *
+currStepPrintFile (char *path)
 {
-  sprintf(filename, "%s/%03d.dot",path, step);
+  sprintf (filename, "%s/%03d.dot", path, step);
   step++;
   return filename;
 }
 
 
-bool MV_edge_matched(MVInfo *mvi, uint i, uint j)
+bool
+MV_edge_matched (MVInfo * mvi, uint i, uint j)
 {
   uint i_match = mvi->v_info[i]->matched;
   return i_match == j;
 }
 
-uint MV_bridge_tenacity(MVInfo *mvi, uint i, uint j)
+uint
+MV_bridge_tenacity (MVInfo * mvi, uint i, uint j)
 {
 
   uint tenacity;
-  if (MV_edge_matched(mvi, i, j)) // if we are processing a matched edge
+  if (MV_edge_matched (mvi, i, j))	// if we are processing a matched edge
     tenacity = mvi->v_info[i]->oddlevel + mvi->v_info[j]->oddlevel + 1;
   else
     tenacity = mvi->v_info[i]->evenlevel + mvi->v_info[j]->evenlevel + 1;
   return tenacity;
 }
 
-void MV_BFS_step_process_edge(MVInfo *mvi, uint i, uint j)
+void
+MV_BFS_step_process_edge (MVInfo * mvi, uint i, uint j)
 {
   uint level = mvi->level;
-  // uint myMinLevel = VertexInfo_min_level(mvi->v_info[i]);
-  uint neighbourMinlevel = VertexInfo_min_level(mvi->v_info[j]);
-  uint neighbourParityLevel = (
-                               level % 2 == 0 ?
-                               mvi->v_info[j]->evenlevel : mvi->v_info[j]->oddlevel);
+  uint neighbourMinlevel = VertexInfo_min_level (mvi->v_info[j]);
+  uint neighbourParityLevel = (level % 2 == 0 ?
+			       mvi->v_info[j]->evenlevel : mvi->
+			       v_info[j]->oddlevel);
 
   // Mark edge as bridge
   if (neighbourMinlevel <= level)
@@ -49,61 +52,61 @@ void MV_BFS_step_process_edge(MVInfo *mvi, uint i, uint j)
       // level (if it is not infinity)
       // then we can know the tenacity of this bridge
       // as soon as we mark it as a bridge;
-      if (neighbourParityLevel < INFINITY )
-        {
-          // if our neighbour's level (of the same parity) is strictly smaller,
-          // or if it is the same level as us, but our neighbour has precedence,
-          // then we have already scanned this edge and marked it as a bridge
-          // when we were doing BFS on it (on the neighbour).
-          if (neighbourParityLevel < level
-              || (neighbourParityLevel == level && j < i))
-            {
-            }
-          // otherwise, we have precedence and we mark the edge as bridge ourselves
-          // by adding it to the list of bridges of appropriate tenacity
-          else
-            {
-              Edge e =
-                { .v1 = i, .v2 = j };
-              uint tenacity_minus_one = MV_bridge_tenacity(mvi, i, j) - 1;
-              EdgeList_add(mvi->bridges[tenacity_minus_one / 2], e);
+      if (neighbourParityLevel < INFINITY)
+	{
+	  // if our neighbour's level (of the same parity) is strictly smaller,
+	  // or if it is the same level as us, but our neighbour has precedence,
+	  // then we have already scanned this edge and marked it as a bridge
+	  // when we were doing BFS on it (on the neighbour).
+	  if (neighbourParityLevel < level
+	      || (neighbourParityLevel == level && j < i))
+	    {
+	    }
+	  // otherwise, we have precedence and we mark the edge as bridge ourselves
+	  // by adding it to the list of bridges of appropriate tenacity
+	  else
+	    {
+	      Edge e = {.v1 = i,.v2 = j };
+	      uint tenacity_minus_one = MV_bridge_tenacity (mvi, i, j) - 1;
+	      EdgeList_add (mvi->bridges[tenacity_minus_one / 2], e);
 
-            }
-        }
+	    }
+	}
       // If the neighbour still doesn't have the level required to compute
       // this edge's tenacity, then that level will be a maxlevel
       // and we need to wait until that maxlevel is attributed in a DDFS
       // in order to know the bridge's tenacity
       else
-        {
-          // so we set a "reminder" so that when j is given its maxlevel
-          // in the DDFS, it also adds the bridge to the list of bridges
-          // of appropraite tenacity
-          NodeList_add(mvi->v_info[j]->hanging_bridges, i);
-        }
+	{
+	  // so we set a "reminder" so that when j is given its maxlevel
+	  // in the DDFS, it also adds the bridge to the list of bridges
+	  // of appropraite tenacity
+	  NodeList_add (mvi->v_info[j]->hanging_bridges, i);
+	}
 
     }
   // j already has level, i is another predecessor of j
   else if (neighbourMinlevel == level + 1)
     {
-      NodeList_add(mvi->v_info[j]->predecessors, i);
+      NodeList_add (mvi->v_info[j]->predecessors, i);
     }
   else if (neighbourMinlevel > level + 1)
     {
-      if (level % 2 == 0) // level is even
-        mvi->v_info[j]->oddlevel = level + 1;
+      if (level % 2 == 0)	// level is even
+	mvi->v_info[j]->oddlevel = level + 1;
       else
-        mvi->v_info[j]->evenlevel = level + 1;
+	mvi->v_info[j]->evenlevel = level + 1;
 
-      NodeList_add(mvi->v_info[j]->predecessors, i);
+      NodeList_add (mvi->v_info[j]->predecessors, i);
 
-      NodeList_add(mvi->levels[level + 1], j);
+      NodeList_add (mvi->levels[level + 1], j);
     }
 }
 
 
 
-void MV_BFS_step(MVInfo *mvi)
+void
+MV_BFS_step (MVInfo * mvi)
 {
 
   uint level = mvi->level;
@@ -113,56 +116,91 @@ void MV_BFS_step(MVInfo *mvi)
   if (level % 2 == 0)
     {
       while (itr)
-        {
-          uint i = itr->value;
-          uint matched = mvi->v_info[i]->matched;
-          NodeListIterator *neighbourItr = mvi->graph->edges[i]->first;
-          while (neighbourItr)
-            {
-              uint j = neighbourItr->value;
-              if (matched != j)
-                MV_BFS_step_process_edge(mvi, i, j);
-              neighbourItr = neighbourItr->next;
-            }
-          itr = itr->next;
-        }
+	{
+	  uint i = itr->value;
+	  uint matched = mvi->v_info[i]->matched;
+	  NodeListIterator *neighbourItr = mvi->graph->edges[i]->first;
+	  while (neighbourItr)
+	    {
+	      uint j = neighbourItr->value;
+	      if (matched != j)
+		MV_BFS_step_process_edge (mvi, i, j);
+	      neighbourItr = neighbourItr->next;
+	    }
+	  itr = itr->next;
+	}
     }
   // traverse all matched edges of all nodes in current level
   else
     {
       while (itr)
-        {
-          uint i = itr->value;
-          uint j = mvi->v_info[i]->matched;
-          if (j != UNMATCHED )
-            MV_BFS_step_process_edge(mvi, i, j);
-          itr = itr->next;
-        }
+	{
+	  uint i = itr->value;
+	  uint j = mvi->v_info[i]->matched;
+	  if (j != UNMATCHED)
+	    MV_BFS_step_process_edge (mvi, i, j);
+	  itr = itr->next;
+	}
     }
 
 }
 
-// TODO: Replace by a union-find implementation
-uint DDFS_iterated_base(MVInfo *mvi, uint node)
+
+uint
+DDFS_iterated_base (MVInfo * mvi, uint node)
 {
-  uint top = node;
-  Petal *p;
-  while (top != BLOSOM_DELETED && (p = mvi->v_info[top]->petal) != 0)
-    top = p->base;
-  return top;
+
+  if (mvi->pathc)
+    {
+      uint top = node;
+      Petal *p;
+      while (top != BLOSOM_DELETED && (p = mvi->v_info[top]->petal) != 0)
+	if (p->link != INFINITY)
+	  top = p->link;
+	else
+	  top = p->base;
+
+      uint v = node;
+      uint vnext;
+
+      while (v != top)
+	{
+	  p = mvi->v_info[v]->petal;
+	  if (p->link != INFINITY)
+	    vnext = p->link;
+	  else
+	    vnext = p->base;
+	  p->link = top;
+	  v = vnext;
+	}
+      return top;
+    }
+  else
+    {
+      uint top = node;
+      Petal *p;
+      while (top != BLOSOM_DELETED && (p = mvi->v_info[top]->petal) != 0)
+	top = p->base;
+      return top;
+    }
+
 }
 
-//TODO: How the fuck do we get around this with a "union-find" ?!
-// maybe we don't have to because we only use this when we are going
-// through the whole blossom anyway!
-uint DDFS_iterated_base_up_to(MVInfo *mvi, uint node, uint base)
+
+// only used 200 times in 5000 random graphs, not worth to change with path compression
+uint
+DDFS_iterated_base_up_to (MVInfo * mvi, uint node, uint base)
 {
+
   uint top = node;
   if (node == base)
     return node;
   Petal *p;
-  while ((p = mvi->v_info[top]->petal) != 0 && p->base != base)
-    top = p->base;
+  while ((p = mvi->v_info[top]->petal) != 0 && p->base != BLOSOM_DELETED
+	 && p->base != base)
+    {
+      top = p->base;
+    }
   return top;
 }
 
@@ -177,9 +215,10 @@ uint DDFS_iterated_base_up_to(MVInfo *mvi, uint node, uint base)
  * @param predecessor
  * @param entry
  */
-void DDFS_set_predecessor(MVInfo *mvi, uint vertex, uint predecessor)
+void
+DDFS_set_predecessor (MVInfo * mvi, uint vertex, uint predecessor)
 {
-  if (mvi->v_info[vertex]->ddfs_predecessor == INFINITY )
+  if (mvi->v_info[vertex]->ddfs_predecessor == INFINITY)
     {
       mvi->v_info[vertex]->ddfs_predecessor = predecessor;
       // mvi->v_info[vertex]->ddfs_entry = entry;
@@ -192,85 +231,87 @@ void DDFS_set_predecessor(MVInfo *mvi, uint vertex, uint predecessor)
  * @param stack
  * @param numUnexausted
  * @return
- */bool DDFS_backtrack(MVInfo *mvi, PointerList *stack, uint *numUnexausted)
- {
-   if (*numUnexausted == 0)
-     return false;
+ */ bool
+DDFS_backtrack (MVInfo * mvi, PointerList * stack, uint * numUnexausted)
+{
+  if (*numUnexausted == 0)
+    return false;
 
-   NodeListIterator *itr, *brother;
+  NodeListIterator *itr, *brother;
 
-   // find first stack element that has a brother
-   // (i.e. first stack element that isn't the last non-deleted
-   // predecessor)
-   while ((*numUnexausted) > 0)
-     {
-       itr = PointerList_top(stack);
+  // find first stack element that has a brother
+  // (i.e. first stack element that isn't the last non-deleted
+  // predecessor)
+  while ((*numUnexausted) > 0)
+    {
+      itr = PointerList_top (stack);
 
-       brother = itr->next;
-       if (brother == NULL )
-         PointerList_pop(stack);
-       else
-         {
-           // look for first non-deleted brother
-           while (brother
-                  && DDFS_iterated_base(mvi, brother->value)
-                  == BLOSOM_DELETED )
-             brother = brother->next;
+      brother = itr->next;
+      if (brother == NULL)
+	PointerList_pop (stack);
+      else
+	{
+	  // look for first non-deleted brother
+	  while (brother
+		 && DDFS_iterated_base (mvi, brother->value)
+		 == BLOSOM_DELETED)
+	    brother = brother->next;
 
-           // if none was found
-           if (brother == NULL )
-             {
-               // move up the stack
-               PointerList_pop(stack);
-               // we exausted the brothers of this stack element
-               (*numUnexausted)--;
-             }
-           // if we found a non-deleted brother (we got what we wanted)
-           else
-             {
-               // if it also turns out to be the last brother (colored or not)
-               if (brother->next == NULL )
-                 (*numUnexausted)--;
-               break;
-             }
-         }
-     }
+	  // if none was found
+	  if (brother == NULL)
+	    {
+	      // move up the stack
+	      PointerList_pop (stack);
+	      // we exausted the brothers of this stack element
+	      (*numUnexausted)--;
+	    }
+	  // if we found a non-deleted brother (we got what we wanted)
+	  else
+	    {
+	      // if it also turns out to be the last brother (colored or not)
+	      if (brother->next == NULL)
+		(*numUnexausted)--;
+	      break;
+	    }
+	}
+    }
 
-   if (brother == NULL )
-     {
-       PointerList_erase(stack);
-       return false;
-     }
+  if (brother == NULL)
+    {
+      PointerList_erase (stack);
+      return false;
+    }
 
-   // set new top of stack to the next brother of such element
-   PointerList_set_top(stack, brother);
+  // set new top of stack to the next brother of such element
+  PointerList_set_top (stack, brother);
 
-   // set dfs predecessor
-   assert(!PointerList_is_empty_or_singleton(stack));
-   NodeListIterator *parent_itr = PointerList_nth(stack, 1);
-   uint parent_entry = parent_itr->value;
-   uint parent = DDFS_iterated_base(mvi, parent_entry);
+  // set dfs predecessor
+  assert (!PointerList_is_empty_or_singleton (stack));
+  NodeListIterator *parent_itr = PointerList_nth (stack, 1);
+  uint parent_entry = parent_itr->value;
+  uint parent = DDFS_iterated_base (mvi, parent_entry);
 
-   // sets DDFS predecessor of the brother
-   DDFS_set_predecessor(mvi, brother->value, parent);
+  // sets DDFS predecessor of the brother
+  DDFS_set_predecessor (mvi, brother->value, parent);
 
-   if(mvi->output){
-     // color the outgoing edge
-     Edge e;
+  if (mvi->output)
+    {
+      // color the outgoing edge
+      Edge e;
 
-     e.v1 = parent;
-     e.v2 = itr->next->value;
+      e.v1 = parent;
+      e.v2 = itr->next->value;
 
-     if (mvi->v_info[e.v1]->ddfs_color == red)
-       EdgeList_add(mvi->redEdges, e);
-     else
-       EdgeList_add(mvi->blueEdges, e);
+      if (mvi->v_info[e.v1]->ddfs_color == red)
+	EdgeList_add (mvi->redEdges, e);
+      else
+	EdgeList_add (mvi->blueEdges, e);
 
-     MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-   }
-   return true;
+      MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+    }
+  return true;
 
- }
+}
 
 /**
  * Sets the stack to be a path to the next uncolored node in DFS ordering.
@@ -278,103 +319,107 @@ void DDFS_set_predecessor(MVInfo *mvi, uint vertex, uint predecessor)
  * @param stack
  * @param numUnexausted
  */
-bool DDFS_next_node(MVInfo *mvi, PointerList *stack, uint *ptr_numUnexausted)
+bool
+DDFS_next_node (MVInfo * mvi, PointerList * stack, uint * ptr_numUnexausted)
 {
-  NodeListIterator *stackTop = PointerList_top(stack);
+  NodeListIterator *stackTop = PointerList_top (stack);
   uint entry = stackTop->value;
-  uint top = DDFS_iterated_base(mvi, entry);
+  uint top = DDFS_iterated_base (mvi, entry);
 
   // add first DFS predecessor to stack
   NodeListIterator *predecessor_itr = mvi->v_info[top]->predecessors->first;
 
-  NodeListIterator bogus_itr =
-    { .value = INFINITY, .next = predecessor_itr };
+  NodeListIterator bogus_itr = {.value = INFINITY,.next = predecessor_itr };
 
-  PointerList_push(stack, &bogus_itr);
+  PointerList_push (stack, &bogus_itr);
   (*ptr_numUnexausted)++;
-  return DDFS_backtrack(mvi, stack, ptr_numUnexausted);
+  return DDFS_backtrack (mvi, stack, ptr_numUnexausted);
 
 
 }
 
-void DDFS_set_node_info(MVInfo *mvi, uint node, DDFSColor color, Petal *petal,
-                        uint ddfs_entry)
+void
+DDFS_set_node_info (MVInfo * mvi, uint node, DDFSColor color, Petal * petal,
+		    uint ddfs_entry)
 {
   // set the node's information if necessary
   if (mvi->v_info[node]->ddfs_color == none)
     {
       mvi->v_info[node]->ddfs_color = color;
-      NodeList_add(petal->support, node);
+      NodeList_add (petal->support, node);
       mvi->v_info[node]->ddfs_entry = ddfs_entry;
     }
 }
 
-bool DDFS_find_new_route(MVInfo *mvi, DDFSInfo *ddfsi, uint center,
-                         DDFSColor new_route_color)
+bool
+DDFS_find_new_route (MVInfo * mvi, DDFSInfo * ddfsi, uint center,
+		     DDFSColor new_route_color)
 {
-  uint centerLvl = VertexInfo_min_level(mvi->v_info[center]);
+  uint centerLvl = VertexInfo_min_level (mvi->v_info[center]);
 
-  PointerList **startingStack = (
-                                 new_route_color == blue ? &ddfsi->bStack : &ddfsi->rStack);
-  uint *numUnexaustedPtr = (
-                            new_route_color == blue ?
-                            &ddfsi->bNumUnexausted : &ddfsi->rNumUnexausted);
+  PointerList **startingStack =
+    (new_route_color == blue ? &ddfsi->bStack : &ddfsi->rStack);
+  uint *numUnexaustedPtr =
+    (new_route_color ==
+     blue ? &ddfsi->bNumUnexausted : &ddfsi->rNumUnexausted);
   uint myNumUnexausted = *numUnexaustedPtr;
 
-  PointerList *myStack = PointerList_init();
-  PointerList_append(myStack, *startingStack);
+  PointerList *myStack = PointerList_init ();
+  PointerList_append (myStack, *startingStack);
 
   while (true)
     {
-      NodeListIterator *stackTop = PointerList_top(myStack);
+      NodeListIterator *stackTop = PointerList_top (myStack);
       uint entry = stackTop->value;
-      uint top = DDFS_iterated_base(mvi, entry);
-      uint topLvl = VertexInfo_min_level(mvi->v_info[top]);
+      uint top = DDFS_iterated_base (mvi, entry);
+      uint topLvl = VertexInfo_min_level (mvi->v_info[top]);
       uint topColor = mvi->v_info[top]->ddfs_color;
 
       if (topColor == none && topLvl <= centerLvl && top != center)
-        {
-          // successfully found new route!
-          PointerList_delete(*startingStack);
-          *startingStack = myStack;
-          *numUnexaustedPtr = myNumUnexausted;
-          return true;
-        }
+	{
+	  // successfully found new route!
+	  PointerList_delete (*startingStack);
+	  *startingStack = myStack;
+	  *numUnexaustedPtr = myNumUnexausted;
+	  return true;
+	}
       else if (topColor == none && topLvl > centerLvl)
-        {
-          // go down!
-          DDFS_set_node_info(mvi, top, new_route_color, ddfsi->petal, entry);
+	{
+	  // go down!
+	  DDFS_set_node_info (mvi, top, new_route_color, ddfsi->petal, entry);
 
-          // find the next undeleted node in ddfs ordering
-          if (!DDFS_next_node(mvi, myStack, &myNumUnexausted))
-            break;
+	  // find the next undeleted node in ddfs ordering
+	  if (!DDFS_next_node (mvi, myStack, &myNumUnexausted))
+	    break;
 
-        }
+	}
       else if (top == center || topColor != none)
-        {
-          // backtrack!
-          if (!DDFS_backtrack(mvi, myStack, &myNumUnexausted))
-            break;
+	{
+	  // backtrack!
+	  if (!DDFS_backtrack (mvi, myStack, &myNumUnexausted))
+	    break;
 
-        }
+	}
 
     }
-  PointerList_delete(myStack);
+  PointerList_delete (myStack);
   return false;
 }
 
-uint DDFS_top(MVInfo *mvi, DDFSInfo *ddfsi, DDFSColor color)
+uint
+DDFS_top (MVInfo * mvi, DDFSInfo * ddfsi, DDFSColor color)
 {
-  return DDFS_iterated_base(mvi, DDFSInfo_top(ddfsi, color));
+  return DDFS_iterated_base (mvi, DDFSInfo_top (ddfsi, color));
 }
 
-bool DDFS_node_deleted(MVInfo *mvi, unsigned int node)
+bool
+DDFS_node_deleted (MVInfo * mvi, unsigned int node)
 {
-  return DDFS_iterated_base(mvi, node) == BLOSOM_DELETED ;
+  return DDFS_iterated_base (mvi, node) == BLOSOM_DELETED;
 }
 
-DDFS_close_petal(MVInfo *mvi, Petal *petal, uint tenacity, uint base,
-                 bool update_lists)
+DDFS_close_petal (MVInfo * mvi, Petal * petal, uint tenacity, uint base,
+		  bool update_lists)
 {
   NodeListIterator *itr = petal->support->first;
 
@@ -383,30 +428,29 @@ DDFS_close_petal(MVInfo *mvi, Petal *petal, uint tenacity, uint base,
       uint node = itr->value;
       VertexInfo *vi = mvi->v_info[node];
       vi->petal = petal;
-      VertexInfo_set_tenacity(vi, tenacity);
-      uint maxlevel = tenacity - VertexInfo_min_level(vi);
+      VertexInfo_set_tenacity (vi, tenacity);
+      uint maxlevel = tenacity - VertexInfo_min_level (vi);
 
       // add node to appropriate level list, and
       // add hanging bridges to the list for appropriate tenacity
       if (update_lists)
-        {
-          NodeList_add(mvi->levels[maxlevel], node);
+	{
+	  NodeList_add (mvi->levels[maxlevel], node);
 
-          // now that we attributed the maxlevel, we should be able to
-          // attribute tenacity to any edges previously marked as
-          // bridges, but still waiting for this node's maxlevel
-          NodeListIterator *itr_hanging_bridges = vi->hanging_bridges->first;
-          while (itr_hanging_bridges)
-            {
-              Edge e =
-                { .v1 = itr_hanging_bridges->value, .v2 = node };
-              uint tenacity_minus_one = MV_bridge_tenacity(mvi, e.v1, e.v2)
-                - 1;
-              EdgeList_add(mvi->bridges[tenacity_minus_one / 2], e);
+	  // now that we attributed the maxlevel, we should be able to
+	  // attribute tenacity to any edges previously marked as
+	  // bridges, but still waiting for this node's maxlevel
+	  NodeListIterator *itr_hanging_bridges = vi->hanging_bridges->first;
+	  while (itr_hanging_bridges)
+	    {
+	      Edge e = {.v1 = itr_hanging_bridges->value,.v2 = node };
+	      uint tenacity_minus_one = MV_bridge_tenacity (mvi, e.v1, e.v2)
+		- 1;
+	      EdgeList_add (mvi->bridges[tenacity_minus_one / 2], e);
 
-              itr_hanging_bridges = itr_hanging_bridges->next;
-            }
-        }
+	      itr_hanging_bridges = itr_hanging_bridges->next;
+	    }
+	}
 
       itr = itr->next;
     }
@@ -416,134 +460,141 @@ DDFS_close_petal(MVInfo *mvi, Petal *petal, uint tenacity, uint base,
 }
 
 
-bool MV_DDFS(MVInfo *mvi, Edge bridge)
+bool
+MV_DDFS (MVInfo * mvi, Edge bridge)
 {
   bool found = false;
 
-  if(mvi->output){
-    printf("Bridge: %d -- %d\n", bridge.v1, bridge.v2);
-    mvi->currentDDFSBridge = bridge;
-  }
+  if (mvi->output)
+    {
+      printf ("Bridge: %d -- %d\n", bridge.v1, bridge.v2);
+      mvi->currentDDFSBridge = bridge;
+    }
   uint bluenode = bridge.v1;
   uint rednode = bridge.v2;
 
-  if (DDFS_node_deleted(mvi, bluenode) || DDFS_node_deleted(mvi, rednode))
+  if (DDFS_node_deleted (mvi, bluenode) || DDFS_node_deleted (mvi, rednode))
     return false;
 
-  DDFSInfo *ddfsi = DDFSInfo_init(mvi->petals);
+  DDFSInfo *ddfsi = DDFSInfo_init (mvi->petals);
 
   // Prepare base case for top blue and red nodes
 
   ddfsi->petal->bluenode = bluenode;
-  NodeListIterator blueitr =
-    { .value = bluenode, .next = 0 };
-  DDFSInfo_push(ddfsi, blue, &blueitr);
+  NodeListIterator blueitr = {.value = bluenode,.next = 0 };
+  DDFSInfo_push (ddfsi, blue, &blueitr);
 
   ddfsi->petal->rednode = rednode;
-  NodeListIterator reditr =
-    { .value = rednode, .next = 0 };
-  DDFSInfo_push(ddfsi, red, &reditr);
+  NodeListIterator reditr = {.value = rednode,.next = 0 };
+  DDFSInfo_push (ddfsi, red, &reditr);
 
 
   while (true)
     {
-      if(mvi->output){
-        MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-      }
-      uint btop_entry = DDFSInfo_top(ddfsi, blue);
-      uint rtop_entry = DDFSInfo_top(ddfsi, red);
+      if (mvi->output)
+	{
+	  MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+	}
+      uint btop_entry = DDFSInfo_top (ddfsi, blue);
+      uint rtop_entry = DDFSInfo_top (ddfsi, red);
 
-      uint btop = DDFS_iterated_base(mvi, btop_entry);
-      uint rtop = DDFS_iterated_base(mvi, rtop_entry);
+      uint btop = DDFS_iterated_base (mvi, btop_entry);
+      uint rtop = DDFS_iterated_base (mvi, rtop_entry);
 
-      if (btop == BLOSOM_DELETED )
-        {
-          bool backtracked = DDFS_backtrack(mvi, ddfsi->bStack, &ddfsi->bNumUnexausted);
+      if (btop == BLOSOM_DELETED)
+	{
+	  bool backtracked =
+	    DDFS_backtrack (mvi, ddfsi->bStack, &ddfsi->bNumUnexausted);
 
-          if (backtracked)
-            continue;
-          else
-            break;
-        }
+	  if (backtracked)
+	    continue;
+	  else
+	    break;
+	}
 
-      if (rtop == BLOSOM_DELETED )
-        {
-          bool backtracked = DDFS_backtrack(mvi, ddfsi->rStack, &ddfsi->rNumUnexausted);
+      if (rtop == BLOSOM_DELETED)
+	{
+	  bool backtracked =
+	    DDFS_backtrack (mvi, ddfsi->rStack, &ddfsi->rNumUnexausted);
 
-          if (backtracked)
-            continue;
-          else
-            break;
-        }
+	  if (backtracked)
+	    continue;
+	  else
+	    break;
+	}
 
 
-      uint blvl = VertexInfo_min_level(mvi->v_info[btop]);
-      uint rlvl = VertexInfo_min_level(mvi->v_info[rtop]);
+      uint blvl = VertexInfo_min_level (mvi->v_info[btop]);
+      uint rlvl = VertexInfo_min_level (mvi->v_info[rtop]);
 
-      if (btop == rtop) // backtrack if possible; if not we found bottleneck
-        {
+      if (btop == rtop)		// backtrack if possible; if not we found bottleneck
+	{
 
-          if (!DDFS_find_new_route(mvi, ddfsi, btop, blue))
-            {
-              if (!DDFS_find_new_route(mvi, ddfsi, rtop, red))
-                {
-                  // found bottleneck!!
-                  uint tenacity = MV_bridge_tenacity(mvi, bluenode, rednode);
+	  if (!DDFS_find_new_route (mvi, ddfsi, btop, blue))
+	    {
+	      if (!DDFS_find_new_route (mvi, ddfsi, rtop, red))
+		{
+		  // found bottleneck!!
+		  uint tenacity = MV_bridge_tenacity (mvi, bluenode, rednode);
 
-                  DDFS_close_petal(mvi, ddfsi->petal, tenacity, btop, true);
+		  DDFS_close_petal (mvi, ddfsi->petal, tenacity, btop, true);
 
-                  break;
-                }
-            }
-        }
-      else if (blvl == 0 && rlvl == 0) // found augmenting path?
-        {
-          DDFS_set_node_info(mvi, btop, blue, ddfsi->petal, btop_entry);
-          DDFS_set_node_info(mvi, rtop, red, ddfsi->petal, rtop_entry);
+		  break;
+		}
+	    }
+	}
+      else if (blvl == 0 && rlvl == 0)	// found augmenting path?
+	{
+	  DDFS_set_node_info (mvi, btop, blue, ddfsi->petal, btop_entry);
+	  DDFS_set_node_info (mvi, rtop, red, ddfsi->petal, rtop_entry);
 
-          uint tenacity = MV_bridge_tenacity(mvi, bluenode, rednode);
+	  uint tenacity = MV_bridge_tenacity (mvi, bluenode, rednode);
 
-          MV_Augment(mvi, ddfsi);
+	  MV_Augment (mvi, ddfsi);
 
-          DDFS_close_petal(mvi, ddfsi->petal, tenacity, BLOSOM_DELETED,
-                           false);
+	  DDFS_close_petal (mvi, ddfsi->petal, tenacity, BLOSOM_DELETED,
+			    false);
 
-          found = true;
-          break;
-        }
+	  found = true;
+	  break;
+	}
       // go deeper!
       else
-        {
+	{
 
-          // go down!
-          DDFSColor mycolor = (blvl >= rlvl ? blue : red);
-          uint mytop = (blvl >= rlvl ? btop : rtop);
-          uint mytop_entry = (blvl >= rlvl ? btop_entry : rtop_entry);
+	  // go down!
+	  DDFSColor mycolor = (blvl >= rlvl ? blue : red);
+	  uint mytop = (blvl >= rlvl ? btop : rtop);
+	  uint mytop_entry = (blvl >= rlvl ? btop_entry : rtop_entry);
 
-          DDFS_set_node_info(mvi, mytop, mycolor, ddfsi->petal, mytop_entry);
+	  DDFS_set_node_info (mvi, mytop, mycolor, ddfsi->petal, mytop_entry);
 
-          bool result;
-          if (mycolor == blue)
-            result = DDFS_next_node(mvi, ddfsi->bStack, &ddfsi->bNumUnexausted);
-          else
-            result = DDFS_next_node(mvi, ddfsi->rStack, &ddfsi->rNumUnexausted);
-          // if we failed to find an undeleted next node, there is neither
-          // petal nor augmenting path going through this bridge
-          if (!result) {
-            found = false;
-            break;
-          }
+	  bool result;
+	  if (mycolor == blue)
+	    result =
+	      DDFS_next_node (mvi, ddfsi->bStack, &ddfsi->bNumUnexausted);
+	  else
+	    result =
+	      DDFS_next_node (mvi, ddfsi->rStack, &ddfsi->rNumUnexausted);
+	  // if we failed to find an undeleted next node, there is neither
+	  // petal nor augmenting path going through this bridge
+	  if (!result)
+	    {
+	      found = false;
+	      break;
+	    }
 
-        }
+	}
 
     }
 
-  DDFSInfo_delete(ddfsi);
-  if(mvi->output){
-    MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-    mvi->currentDDFSBridge.v1 = INFINITY;
-    mvi->currentDDFSBridge.v2 = INFINITY;
-  }
+  DDFSInfo_delete (ddfsi);
+  if (mvi->output)
+    {
+      MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+      mvi->currentDDFSBridge.v1 = INFINITY;
+      mvi->currentDDFSBridge.v2 = INFINITY;
+    }
 
   return found;
 }
@@ -553,235 +604,245 @@ bool MV_DDFS(MVInfo *mvi, Edge bridge)
  * appends to \a p the path from \a v to the bridge of \a petal,
  * including the bridge edge itself.
  */
-void MV_append_path_upto_bridge(MVInfo *mvi, EdgeList *p, uint v, Petal *petal)
+void
+MV_append_path_upto_bridge (MVInfo * mvi, EdgeList * p, uint v, Petal * petal)
 {
-  assert(mvi->v_info[v]->petal == petal);
+  assert (mvi->v_info[v]->petal == petal);
   uint w = v;
   DDFSColor color = mvi->v_info[v]->ddfs_color;
   uint target = (color == blue ? petal->bluenode : petal->rednode);
   do
     {
-      assert(mvi->v_info[w]->ddfs_predecessor != INFINITY);
+      assert (mvi->v_info[w]->ddfs_predecessor != INFINITY);
 
       w = mvi->v_info[w]->ddfs_predecessor;
 
-      Edge e =
-        { .v1 = v, .v2 = w };
-      EdgeList_add(p, e);
+      Edge e = {.v1 = v,.v2 = w };
+      EdgeList_add (p, e);
 
       v = w;
-    } while (w != target);
+    }
+  while (w != target);
 
   Edge e =
-    { .v1 = w, .v2 = (color == blue ? petal->rednode : petal->bluenode) };
-  EdgeList_add(p, e);
+    {.v1 = w,.v2 = (color == blue ? petal->rednode : petal->bluenode) };
+  EdgeList_add (p, e);
 }
 
 /**
  * Given a path \a p, and a vertex \a v belonging to a \a petal,
  * appends to \a p the (shortest) alternating path from \a v to the base of \a petal.
  */
-void MV_append_path_downto_base(MVInfo *mvi, EdgeList *p, uint v, Petal *petal)
+void
+MV_append_path_downto_base (MVInfo * mvi, EdgeList * p, uint v, Petal * petal)
 {
   uint w = v;
   do
     {
-      assert(!NodeList_is_empty(mvi->v_info[w]->predecessors));
+      assert (!NodeList_is_empty (mvi->v_info[w]->predecessors));
 
       w = mvi->v_info[w]->predecessors->first->value;
 
       Petal *w_petal = mvi->v_info[w]->petal;
-      if (w_petal != 0) // if we must unfold a petal
-        {
-          w = w_petal->base;
-        }
+      if (w_petal != 0)		// if we must unfold a petal
+	{
+	  w = w_petal->base;
+	}
       else
-        {
-          Edge e =
-            { .v1 = v, .v2 = w };
-          EdgeList_add(p, e);
-        }
+	{
+	  Edge e = {.v1 = v,.v2 = w };
+	  EdgeList_add (p, e);
+	}
 
       v = w;
-    } while (w != petal->base);
+    }
+  while (w != petal->base);
 }
 
-NodeList *MV_base_to_entry_path(MVInfo *mvi, uint base, uint entry, uint parity);
+NodeList *MV_base_to_entry_path (MVInfo * mvi, uint base, uint entry,
+				 uint parity);
 
-NodeList *MV_first_base_to_entry_path(MVInfo *mvi, uint first_base, uint entry,
-                                      uint parity)
+NodeList *
+MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
+			     uint parity)
 {
   if (first_base == entry)
     {
-      NodeList *path = NodeList_init();
+      NodeList *path = NodeList_init ();
 
-      NodeList_add(path, entry);
+      NodeList_add (path, entry);
       return path;
     }
   // else:
   VertexInfo *entry_vi = mvi->v_info[entry];
-  uint entry_min_level = VertexInfo_min_level(entry_vi);
-  if (entry_min_level % 2 == parity % 2) // go straight down
+  uint entry_min_level = VertexInfo_min_level (entry_vi);
+  if (entry_min_level % 2 == parity % 2)	// go straight down
     {
-      assert(!NodeList_is_empty(entry_vi->predecessors));
+      assert (!NodeList_is_empty (entry_vi->predecessors));
 
       uint predecessor = entry_vi->predecessors->first->value;
-      uint predecessor_iterated_base = DDFS_iterated_base_up_to(mvi,
-                                                                predecessor, first_base);
+      uint predecessor_iterated_base = DDFS_iterated_base_up_to (mvi,
+								 predecessor,
+								 first_base);
 
       if (predecessor == predecessor_iterated_base)
-        {
-          NodeList *p = MV_first_base_to_entry_path(mvi, first_base,
-                                                    predecessor, parity + 1);
-          NodeList_add(p, entry);
-          return p;
-        }
+	{
+	  NodeList *p = MV_first_base_to_entry_path (mvi, first_base,
+						     predecessor, parity + 1);
+	  NodeList_add (p, entry);
+	  return p;
+	}
       else
-        {
-          NodeList *p = MV_first_base_to_entry_path(mvi, first_base,
-                                                    predecessor_iterated_base, 0); // "0" for even
-          NodeList *p2 = MV_base_to_entry_path(mvi, predecessor_iterated_base,
-                                               predecessor, parity + 1);
+	{
+	  NodeList *p = MV_first_base_to_entry_path (mvi, first_base,
+						     predecessor_iterated_base, 0);	// "0" for even
+	  NodeList *p2 =
+	    MV_base_to_entry_path (mvi, predecessor_iterated_base,
+				   predecessor, parity + 1);
 
-          NodeList_join(p, p2);
-          NodeList_add(p, entry);
-          return p;
-        }
+	  NodeList_join (p, p2);
+	  NodeList_add (p, entry);
+	  return p;
+	}
     }
-  else // go up to the bridge, then straight down from the other bridge vertex to the base
+  else				// go up to the bridge, then straight down from the other bridge vertex to the base
     {
       DDFSColor color = entry_vi->ddfs_color;
-      uint bridge_vertex = (
-                            color == blue ?
-                            entry_vi->petal->bluenode : entry_vi->petal->rednode);
+      uint bridge_vertex = (color == blue ?
+			    entry_vi->petal->bluenode : entry_vi->
+			    petal->rednode);
 
       uint entry_entry = entry_vi->ddfs_entry;
       // if the entry vertex is itself an iterated base of some vertex
       // then we must go up from entry to entry_entry to pred
       if (entry != entry_entry)
-        {
-          // if the entry_entry is the bridge vertex
-          // then the bridge must be an unmatched edge
-          if (entry_entry == bridge_vertex)
-            {
-              uint other_bridge_vertex = (
-                                          color == blue ?
-                                          entry_vi->petal->rednode :
-                                          entry_vi->petal->bluenode);
-              //                            uint other_bridge_vertex_min_level = VertexInfo_min_level(
-              //                                            mvi->v_info[other_bridge_vertex]);
+	{
+	  // if the entry_entry is the bridge vertex
+	  // then the bridge must be an unmatched edge
+	  if (entry_entry == bridge_vertex)
+	    {
+	      uint other_bridge_vertex = (color == blue ?
+					  entry_vi->petal->rednode :
+					  entry_vi->petal->bluenode);
+	      //                            uint other_bridge_vertex_min_level = VertexInfo_min_level(
+	      //                                            mvi->v_info[other_bridge_vertex]);
 
-              // p is set to the path straight from the base to
-              // the other side of the bridge; this path must be even
-              // because the bridge is unmatched
-              NodeList *p = MV_base_to_entry_path(mvi, first_base,
-                                                  other_bridge_vertex, 0);
+	      // p is set to the path straight from the base to
+	      // the other side of the bridge; this path must be even
+	      // because the bridge is unmatched
+	      NodeList *p = MV_base_to_entry_path (mvi, first_base,
+						   other_bridge_vertex, 0);
 
-              // and then we add a path from our side of the bridge (entry_entry)
-              // to our node (entry), which is also even,
-              // and which is reversed (so it goes from entry' = entry_entry to base' = entry)
-              NodeList *p2 = MV_base_to_entry_path(mvi, entry, entry_entry,
-                                                   0);
+	      // and then we add a path from our side of the bridge (entry_entry)
+	      // to our node (entry), which is also even,
+	      // and which is reversed (so it goes from entry' = entry_entry to base' = entry)
+	      NodeList *p2 = MV_base_to_entry_path (mvi, entry, entry_entry,
+						    0);
 
-              // FIXME: don't reverse like this
-              NodeList *p2_reverse = NodeList_init();
-              NodeList_append_reverse(p2_reverse, p2);
-              NodeList_delete(p2);
+	      // FIXME: don't reverse like this
+	      NodeList *p2_reverse = NodeList_init ();
+	      NodeList_append_reverse (p2_reverse, p2);
+	      NodeList_delete (p2);
 
-              NodeList_join(p, p2_reverse);
-              return p;
-            }
-          // if we haven't yet reached the bridge vertex, we must
-          // go up the ddfs_predecessor chain
-          else
-            {
-              uint ddfs_pred = entry_vi->ddfs_predecessor;
+	      NodeList_join (p, p2_reverse);
+	      return p;
+	    }
+	  // if we haven't yet reached the bridge vertex, we must
+	  // go up the ddfs_predecessor chain
+	  else
+	    {
+	      uint ddfs_pred = entry_vi->ddfs_predecessor;
 
-              // some even path p goes from base to predecessor,
-              NodeList *p = MV_first_base_to_entry_path(mvi, first_base,
-                                                        ddfs_pred, 0);
-              // then we have an even path from entry_entry to entry
-              NodeList *p2 = MV_base_to_entry_path(mvi, entry, entry_entry,
-                                                   0);
+	      // some even path p goes from base to predecessor,
+	      NodeList *p = MV_first_base_to_entry_path (mvi, first_base,
+							 ddfs_pred, 0);
+	      // then we have an even path from entry_entry to entry
+	      NodeList *p2 = MV_base_to_entry_path (mvi, entry, entry_entry,
+						    0);
 
-              // FIXME: don't reverse like this
-              NodeList *p2_reverse = NodeList_init();
-              NodeList_append_reverse(p2_reverse, p2);
-              NodeList_delete(p2);
+	      // FIXME: don't reverse like this
+	      NodeList *p2_reverse = NodeList_init ();
+	      NodeList_append_reverse (p2_reverse, p2);
+	      NodeList_delete (p2);
 
-              NodeList_join(p, p2_reverse);
-              return p;
-            }
-        }
+	      NodeList_join (p, p2_reverse);
+	      return p;
+	    }
+	}
       // if entry is a simple node (no petal needs unfolding)
       else
-        {
-          // if that simple node happens to be one side of the bridge
-          if (entry == bridge_vertex)
-            {
-              uint other_bridge_vertex = (
-                                          color == blue ?
-                                          entry_vi->petal->rednode :
-                                          entry_vi->petal->bluenode);
-              uint other_bridge_vertex_min_level = VertexInfo_min_level(
-                                                                        mvi->v_info[other_bridge_vertex]);
+	{
+	  // if that simple node happens to be one side of the bridge
+	  if (entry == bridge_vertex)
+	    {
+	      uint other_bridge_vertex = (color == blue ?
+					  entry_vi->petal->rednode :
+					  entry_vi->petal->bluenode);
+	      uint other_bridge_vertex_min_level =
+		VertexInfo_min_level (mvi->v_info[other_bridge_vertex]);
 
-              // p is set to the path straight from the base to
-              // the other side of the bridge
-              // and then we add our vertex
+	      // p is set to the path straight from the base to
+	      // the other side of the bridge
+	      // and then we add our vertex
 
-              VertexInfo * other_info = mvi->v_info[other_bridge_vertex];
+	      VertexInfo *other_info = mvi->v_info[other_bridge_vertex];
 
-              uint other_bridge_ov_vertex = (
-                                          other_info->ddfs_color == blue ?
-                                          other_info->petal->rednode :
-                                          other_info->petal->bluenode);
-              if(other_bridge_ov_vertex == entry){
-               // p is set to the path straight from the base to
-               // the other side of the bridge
-               // and then we add our vertex
-   	    
-                NodeList *p = MV_base_to_entry_path(mvi, first_base,
-                                                    other_bridge_vertex, other_bridge_vertex_min_level );
-                NodeList_add(p, bridge_vertex); // bridge_vertex == entry
-                return p;
-	    }else{
-	    //other bridge after this:
-                NodeList *p = MV_base_to_entry_path(mvi, first_base,
-                                                    other_bridge_vertex, parity+1);
-                NodeList_add(p, bridge_vertex); // bridge_vertex == entry
-                return p;
+	      uint other_bridge_ov_vertex = (other_info->ddfs_color == blue ?
+					     other_info->petal->rednode :
+					     other_info->petal->bluenode);
+	      if (other_bridge_ov_vertex == entry)
+		{
+		  // p is set to the path straight from the base to
+		  // the other side of the bridge
+		  // and then we add our vertex
 
-	  }
+		  NodeList *p = MV_base_to_entry_path (mvi, first_base,
+						       other_bridge_vertex,
+						       other_bridge_vertex_min_level);
+		  NodeList_add (p, bridge_vertex);	// bridge_vertex == entry
+		  return p;
+		}
+	      else
+		{
+		  //other bridge after this:
+		  NodeList *p = MV_base_to_entry_path (mvi, first_base,
+						       other_bridge_vertex,
+						       parity + 1);
+		  NodeList_add (p, bridge_vertex);	// bridge_vertex == entry
+		  return p;
 
-            }
-          // if we haven't yet reached the bridge vertex, we must
-          // go up the ddfs_predecessor chain
-          else
-            {
-              uint ddfs_pred = entry_vi->ddfs_predecessor;
+		}
 
-              // some path p goes from base to predecessor,
-              NodeList *p = MV_first_base_to_entry_path(mvi, first_base,
-                                                        ddfs_pred, parity + 1);
+	    }
+	  // if we haven't yet reached the bridge vertex, we must
+	  // go up the ddfs_predecessor chain
+	  else
+	    {
+	      uint ddfs_pred = entry_vi->ddfs_predecessor;
 
-              // and then straight down to entry
-              NodeList_add(p, entry);
-              return p;
-            }
+	      // some path p goes from base to predecessor,
+	      NodeList *p = MV_first_base_to_entry_path (mvi, first_base,
+							 ddfs_pred,
+							 parity + 1);
 
-        }
+	      // and then straight down to entry
+	      NodeList_add (p, entry);
+	      return p;
+	    }
+
+	}
     }
   return 0;
 }
 
-NodeList *MV_base_to_entry_path(MVInfo *mvi, uint base, uint entry, uint parity)
+NodeList *
+MV_base_to_entry_path (MVInfo * mvi, uint base, uint entry, uint parity)
 {
   Petal *entry_petal = mvi->v_info[entry]->petal;
 
   if (entry_petal == 0 || entry_petal->base == base)
     {
-      return MV_first_base_to_entry_path(mvi, base, entry, parity);
+      return MV_first_base_to_entry_path (mvi, base, entry, parity);
     }
   else
     {
@@ -791,12 +852,12 @@ NodeList *MV_base_to_entry_path(MVInfo *mvi, uint base, uint entry, uint parity)
       // so we take an odd path to the predecessor of first_base,
       // followed by an appropriate first_base to entry path
       uint first_base_pred =
-        mvi->v_info[first_base]->predecessors->first->value;
-      NodeList *p = MV_base_to_entry_path(mvi, base, first_base_pred, 1);
-      NodeList *p2 = MV_first_base_to_entry_path(mvi, first_base, entry,
-                                                 parity);
+	mvi->v_info[first_base]->predecessors->first->value;
+      NodeList *p = MV_base_to_entry_path (mvi, base, first_base_pred, 1);
+      NodeList *p2 = MV_first_base_to_entry_path (mvi, first_base, entry,
+						  parity);
 
-      NodeList_join(p, p2);
+      NodeList_join (p, p2);
       return p;
     }
 }
@@ -807,9 +868,10 @@ NodeList *MV_base_to_entry_path(MVInfo *mvi, uint base, uint entry, uint parity)
  * @param stack A stack produced by DDFS
  * @return
  */
-NodeList *MV_unfold_stack(MVInfo *mvi, PointerList *stack)
+NodeList *
+MV_unfold_stack (MVInfo * mvi, PointerList * stack)
 {
-  NodeList *path = NodeList_init();
+  NodeList *path = NodeList_init ();
 
   PointerListIterator *sitr = stack->first;
 
@@ -818,55 +880,56 @@ NodeList *MV_unfold_stack(MVInfo *mvi, PointerList *stack)
       NodeListIterator *selement = sitr->value;
       uint entry = selement->value;
 
-      uint base = DDFS_iterated_base(mvi, entry);
+      uint base = DDFS_iterated_base (mvi, entry);
 
       if (entry == base)
-        {
-          NodeList_add(path, entry);
-        }
+	{
+	  NodeList_add (path, entry);
+	}
       else
-        {
-          NodeList * bepath = MV_base_to_entry_path(mvi, base, entry, 0); // "0" for even
-          NodeList_join(path, bepath);
-        }
+	{
+	  NodeList *bepath = MV_base_to_entry_path (mvi, base, entry, 0);	// "0" for even
+	  NodeList_join (path, bepath);
+	}
 
       sitr = sitr->next;
     }
   return path;
 }
 
-void MV_Augment(MVInfo *mvi, DDFSInfo *ddfsi)
+void
+MV_Augment (MVInfo * mvi, DDFSInfo * ddfsi)
 {
 
-  NodeList *blue_path = MV_unfold_stack(mvi, ddfsi->bStack);
-  NodeList *red_path = MV_unfold_stack(mvi, ddfsi->rStack);
+  NodeList *blue_path = MV_unfold_stack (mvi, ddfsi->bStack);
+  NodeList *red_path = MV_unfold_stack (mvi, ddfsi->rStack);
 
   // FIXME: don't reverse like this
-  NodeList *red_path_reverse = NodeList_init();
-  NodeList_append_reverse(red_path_reverse, red_path);
-  NodeList_delete(red_path);
+  NodeList *red_path_reverse = NodeList_init ();
+  NodeList_append_reverse (red_path_reverse, red_path);
+  NodeList_delete (red_path);
 
-  NodeList_join(blue_path, red_path_reverse);
+  NodeList_join (blue_path, red_path_reverse);
 
   NodeListIterator *itr;
 
-  if(mvi->output){
-    // EdgeList_erase(mvi->aug_path);
-    itr = blue_path->first;
-    while (itr)
-      {
-        if (itr->next)
-          {
-            Edge e =
-              { .v1 = itr->value, .v2 = itr->next->value };
-            EdgeList_add(mvi->aug_path, e);
-          }
-        itr = itr->next;
-      }
-    MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-    EdgeList_erase(mvi->aug_path);
-    printf("Aug. Path: ");
-  }
+  if (mvi->output)
+    {
+      // EdgeList_erase(mvi->aug_path);
+      itr = blue_path->first;
+      while (itr)
+	{
+	  if (itr->next)
+	    {
+	      Edge e = {.v1 = itr->value,.v2 = itr->next->value };
+	      EdgeList_add (mvi->aug_path, e);
+	    }
+	  itr = itr->next;
+	}
+      MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+      EdgeList_erase (mvi->aug_path);
+      printf ("Aug. Path: ");
+    }
 
   // do the actual augmentation
 
@@ -877,10 +940,10 @@ void MV_Augment(MVInfo *mvi, DDFSInfo *ddfsi)
       uint v1 = itr->value;
 
       itr = itr->next;
-      assert(itr != 0);
+      assert (itr != 0);
       uint v2 = itr->value;
-      if(mvi->output)
-        printf("%d, %d   ", v1, v2);
+      if (mvi->output)
+	printf ("%d, %d   ", v1, v2);
 
       mvi->v_info[v1]->matched = v2;
       mvi->v_info[v2]->matched = v1;
@@ -888,80 +951,85 @@ void MV_Augment(MVInfo *mvi, DDFSInfo *ddfsi)
       itr = itr->next;
     }
 
-  if(mvi->output){
-    printf("\n");
-    MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-    EdgeList_erase(mvi->aug_path);
-  }
+  if (mvi->output)
+    {
+      printf ("\n");
+      MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+      EdgeList_erase (mvi->aug_path);
+    }
 
-  NodeList_delete(blue_path);
+  NodeList_delete (blue_path);
 
 
 }
 
-void MV_maximalMatching(MVInfo *mvi)
+void
+MV_maximalMatching (MVInfo * mvi)
 {
   // (do a maximal matching, why not...)
   uint n, i, j, k;
   NodeListIterator *itr;
   for (i = 0; i < mvi->graph->size; i++)
     {
-      if (mvi->v_info[i]->matched == UNMATCHED )
-        {
-          itr = mvi->graph->edges[i]->first;
-          while (itr)
-            {
-              j = itr->value;
-              if (mvi->v_info[j]->matched == UNMATCHED )
-                {
-                  mvi->v_info[i]->matched = j;
-                  mvi->v_info[j]->matched = i;
-                  break;
-                }
-              itr = itr->next;
-            }
-        }
+      if (mvi->v_info[i]->matched == UNMATCHED)
+	{
+	  itr = mvi->graph->edges[i]->first;
+	  while (itr)
+	    {
+	      j = itr->value;
+	      if (mvi->v_info[j]->matched == UNMATCHED)
+		{
+		  mvi->v_info[i]->matched = j;
+		  mvi->v_info[j]->matched = i;
+		  break;
+		}
+	      itr = itr->next;
+	    }
+	}
     }
-  NodeList_erase(mvi->levels[0]);
+  NodeList_erase (mvi->levels[0]);
   for (i = 0; i < mvi->graph->size; i++)
     {
-      if (mvi->v_info[i]->matched == UNMATCHED )
-        NodeList_add(mvi->levels[0], i);
+      if (mvi->v_info[i]->matched == UNMATCHED)
+	NodeList_add (mvi->levels[0], i);
     }
 }
 
-EdgeList *MV_MaximumCardinalityMatching_(MVInfo *mvi)
+EdgeList *
+MV_MaximumCardinalityMatching_ (MVInfo * mvi)
 {
-  EdgeList *matching = EdgeList_init();
+  EdgeList *matching = EdgeList_init ();
   bool found = true;
 
   mvi->stage = 0;
 
   while (found)
-    { // for each stage
+    {				// for each stage
       found = false;
-      for (mvi->level = 0; mvi->level < mvi->graph->size; mvi->level++) // for each level
-        {
-          MV_BFS_step(mvi);
+      for (mvi->level = 0; mvi->level < mvi->graph->size; mvi->level++)	// for each level
+	{
+	  MV_BFS_step (mvi);
 
-          if(mvi->output){
-            if (mvi->level == 0 || !NodeList_is_empty(mvi->levels[mvi->level]))
-              MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-          }
-          EdgeListIterator *eitr = mvi->bridges[mvi->level]->first;
-          while (eitr)
-            { 
-              int i;
-              Edge e = eitr->value;
-              found = MV_DDFS(mvi, e) || found;
-              eitr = eitr->next;
-            }
+	  if (mvi->output)
+	    {
+	      if (mvi->level == 0
+		  || !NodeList_is_empty (mvi->levels[mvi->level]))
+		MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+	    }
+	  EdgeListIterator *eitr = mvi->bridges[mvi->level]->first;
+	  while (eitr)
+	    {
+	      int i;
+	      Edge e = eitr->value;
+	      found = MV_DDFS (mvi, e) || found;
+	      eitr = eitr->next;
+	    }
 
-          if (found)
-            break;
-        }
+	  if (found)
+	    break;
+	}
 
-      MVInfo_next_stage(mvi);
+      MVInfo_next_stage (mvi);
     }
 
   // Build matching.
@@ -970,40 +1038,41 @@ EdgeList *MV_MaximumCardinalityMatching_(MVInfo *mvi)
   // so that we don't add edges twice
   uint i;
   uint checked[mvi->graph->size];
-  memset(checked, 0, sizeof(uint) * mvi->graph->size);
+  memset (checked, 0, sizeof (uint) * mvi->graph->size);
 
   for (i = 0; i < mvi->graph->size; i++)
     {
       if (!checked[i])
-        {
-          uint matched = mvi->v_info[i]->matched;
-          if (matched != UNMATCHED )
-            {
-              Edge e =
-                { .v1 = i, .v2 = matched };
-              EdgeList_add(matching, e);
-              checked[matched] = true;
-            }
-        }
+	{
+	  uint matched = mvi->v_info[i]->matched;
+	  if (matched != UNMATCHED)
+	    {
+	      Edge e = {.v1 = i,.v2 = matched };
+	      EdgeList_add (matching, e);
+	      checked[matched] = true;
+	    }
+	}
     }
 
   return matching;
 }
 
-EdgeList *MV_MaximumCardinalityMatching(Graph *g)
+EdgeList *
+MV_MaximumCardinalityMatching (Graph * g)
 {
-  MVInfo *mvi = MVInfo_init(g);
+  MVInfo *mvi = MVInfo_init (g);
 
-  if(mvi->output){
-    MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-    MV_maximalMatching(mvi);
-    MVInfo_next_stage(mvi);
-    MVInfo_print_graphviz(mvi, currStepPrintFile(mvi->outpath));
-    MVInfo_print_contents(mvi, "mv_progress/graph.txt");
-  }
+  if (mvi->output)
+    {
+      MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+      MV_maximalMatching (mvi);
+      MVInfo_next_stage (mvi);
+      MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
+      MVInfo_print_contents (mvi, "mv_progress/graph.txt");
+    }
 
-  EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
+  EdgeList *matching = MV_MaximumCardinalityMatching_ (mvi);
 
-  MVInfo_delete(mvi);
+  MVInfo_delete (mvi);
   return matching;
 }

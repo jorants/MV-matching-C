@@ -1,3 +1,6 @@
+/**
+ @file
+*/
 #ifndef PETAL_H
 #define PETAL_H
 
@@ -10,17 +13,17 @@
 
 typedef struct
 {
-    uint bluenode, rednode, base;
-
-    NodeList *support;
+  uint bluenode, rednode, base;
+  uint link;
+  NodeList *support;
 } Petal;
 
 
-// creates a new petal, indexes it in the given pointer list
-Petal *Petal_init(PointerList *ptrs);
-// Deletes all petals indexed in the pointer list
-// does NOT delete the pointerlist itself,
-// and the pointers to the deleted petals become invalid
-void Petal_deleteAll(PointerList *ptrs);
+/// creates a new petal, indexes it in the given pointer list
+Petal *Petal_init (PointerList * ptrs);
+/// Deletes all petals indexed in the pointer list
+/// does NOT delete the pointerlist itself,
+/// and the pointers to the deleted petals become invalid
+void Petal_deleteAll (PointerList * ptrs);
 
 #endif // PETAL_H

@@ -3,61 +3,67 @@
 
 #include "Graph.h"
 
-Graph *Graph_init(uint size)
+Graph *
+Graph_init (uint size)
 {
-	int i;
-	Graph *g = malloc(sizeof(Graph));
-	g->size = size;
-	g->edges = malloc(sizeof(NodeList *) * size);
-	for (i = 0; i < size; i++)
+  int i;
+  Graph *g = malloc (sizeof (Graph));
+  g->size = size;
+  g->edges = malloc (sizeof (NodeList *) * size);
+  for (i = 0; i < size; i++)
+    {
+      g->edges[i] = NodeList_init ();
+    }
+  return g;
+}
+
+Graph *
+Graph_init_random (uint size, uint modulus)
+{
+  Graph *g = Graph_init (size);
+  // generate random edges, each edge with probability 1/modulus
+  srand (time (NULL));
+  uint i, j;
+  for (i = 0; i < size; i++)
+    for (j = i + 1; j < size; j++)
+      if (rand () % modulus == 0)
 	{
-		g->edges[i] = NodeList_init();
+	  Graph_add_edge (g, i, j);
 	}
-	return g;
+  return g;
 }
 
-Graph *Graph_init_random(uint size, uint modulus)
+void
+Graph_delete (Graph * g)
 {
-	Graph *g = Graph_init(size);
-	// generate random edges, each edge with probability 1/modulus
-	srand(time(NULL ));
-	uint i, j;
-	for (i = 0; i < size; i++)
-		for (j = i + 1; j < size; j++)
-			if (rand() % modulus == 0)
-			{
-				Graph_add_edge(g, i, j);
-			}
-	return g;
+  int i;
+  for (i = 0; i < g->size; i++)
+    {
+      NodeList_delete (g->edges[i]);
+    }
+  free (g->edges);
+  free (g);
 }
 
-void Graph_delete(Graph *g)
+void
+Graph_add_edge (Graph * g, uint i, uint j)
 {
-	int i;
-	for (i = 0; i < g->size; i++)
-	{
-		NodeList_delete(g->edges[i]);
-	}
-	free(g->edges);
-	free(g);
-}
-
-void Graph_add_edge(Graph *g, uint i, uint j)
-{
-	// TODO: eventually assert there are no duplicates
-	NodeList_add(g->edges[i], j);
-	NodeList_add(g->edges[j], i);
+  // TODO: eventually assert there are no duplicates
+  NodeList_add (g->edges[i], j);
+  NodeList_add (g->edges[j], i);
 }
 
 // useful when certain generators number from 1 to N instead of from 0 to N-1
-void Graph_add_edge_(Graph *g, uint i, uint j)
+void
+Graph_add_edge_ (Graph * g, uint i, uint j)
 {
-	Graph_add_edge(g, i - 1, j - 1);
+  Graph_add_edge (g, i - 1, j - 1);
 }
 
-NodeListIterator *Graph_neighbours(Graph *g, uint v)
+NodeListIterator *
+Graph_neighbours (Graph * g, uint v)
 {
-	return g->edges[v]->first;
+  return g->edges[v]->first;
 }
 
 /**
@@ -80,51 +86,52 @@ NodeListIterator *Graph_neighbours(Graph *g, uint v)
  *
  * Converted from fortran with the help of f2c.
  */
-Graph *Graph_init_triangles(uint k)
+Graph *
+Graph_init_triangles (uint k)
 {
-	Graph *g = Graph_init(3 * k);
-	// generate random edges, each edge with probability 1/2
+  Graph *g = Graph_init (3 * k);
+  // generate random edges, each edge with probability 1/2
 
-	uint n, m, i1, i__, i__1, i2, l;
+  uint n, m, i1, i__, i__1, i2, l;
 
-	n = k * 3;
-	m = (k << 2) - 1;
-	l = 1;
+  n = k * 3;
+  m = (k << 2) - 1;
+  l = 1;
 
-	L5: i1 = (l - 1) * 3 + 1;
-	i2 = i1 + 1;
-	i__1 = i2;
-	for (i__ = i1; i__ <= i__1; ++i__)
+L5:i1 = (l - 1) * 3 + 1;
+  i2 = i1 + 1;
+  i__1 = i2;
+  for (i__ = i1; i__ <= i__1; ++i__)
+    {
+      Graph_add_edge_ (g, i__, i__ + 1);
+      if (i__ < i2)
+	Graph_add_edge_ (g, i__, i__ + 2);
+    }
+
+  if (l < k)
+    {
+      ++l;
+      goto L5;
+    }
+
+  i__ = 0;
+  m = 0;
+
+  i__1 = k - 1;
+  for (l = 1; l <= i__1; ++l)
+    {
+      m = (m + 1) % 3;
+      if (m == 1)
 	{
-		Graph_add_edge_(g, i__, i__ + 1);
-		if (i__ < i2)
-			Graph_add_edge_(g, i__, i__ + 2);
+	  ++i__;
 	}
-
-	if (l < k)
+      else
 	{
-		++l;
-		goto L5;
+	  i__ += 4;
 	}
-
-	i__ = 0;
-	m = 0;
-
-	i__1 = k - 1;
-	for (l = 1; l <= i__1; ++l)
-	{
-		m = (m + 1) % 3;
-		if (m == 1)
-		{
-			++i__;
-		}
-		else
-		{
-			i__ += 4;
-		}
-		Graph_add_edge_(g, i__, i__ + 3);
-	}
-	return g;
+      Graph_add_edge_ (g, i__, i__ + 3);
+    }
+  return g;
 }
 
 /**   GENERATES A CHAIN OF TRIANGLES CONNECTED AT ALL VERTICES
@@ -148,40 +155,41 @@ Graph *Graph_init_triangles(uint k)
 
  Converted from fortran with the help of f2c.
  */
-Graph *Graph_init_triangles2(uint k)
+Graph *
+Graph_init_triangles2 (uint k)
 {
-	Graph *g = Graph_init(3 * k);
+  Graph *g = Graph_init (3 * k);
 
-	uint n, m, i1, i__, i__1, i2, l;
+  uint n, m, i1, i__, i__1, i2, l;
 
-	n = k * 3;
-	m = k * 6 - 3;
+  n = k * 3;
+  m = k * 6 - 3;
 
-	l = 1;
-	L5: i1 = (l - 1) * 3 + 1;
-	i2 = i1 + 1;
+  l = 1;
+L5:i1 = (l - 1) * 3 + 1;
+  i2 = i1 + 1;
 
-	i__1 = i2;
-	for (i__ = i1; i__ <= i__1; ++i__)
-	{
-		Graph_add_edge_(g, i__, i__ + 1);
-		if (i__ < i2)
-			Graph_add_edge_(g, i__, i__ + 2);
-	}
+  i__1 = i2;
+  for (i__ = i1; i__ <= i__1; ++i__)
+    {
+      Graph_add_edge_ (g, i__, i__ + 1);
+      if (i__ < i2)
+	Graph_add_edge_ (g, i__, i__ + 2);
+    }
 
-	if (l < k)
-	{
-		++l;
-		goto L5;
-	}
+  if (l < k)
+    {
+      ++l;
+      goto L5;
+    }
 
-	i__1 = n - 3;
-	for (i__ = 1; i__ <= i__1; ++i__)
-	{
-		Graph_add_edge_(g, i__, i__ + 3);
-	}
+  i__1 = n - 3;
+  for (i__ = 1; i__ <= i__1; ++i__)
+    {
+      Graph_add_edge_ (g, i__, i__ + 3);
+    }
 
-	return g;
+  return g;
 }
 
 /**     PROGRAM GABOW
@@ -211,32 +219,33 @@ Graph *Graph_init_triangles2(uint k)
  Converted from fortran with the help of f2c.
 */
 
-Graph *Graph_init_hardcard(uint k)
+Graph *
+Graph_init_hardcard (uint k)
 {
-	Graph *g = Graph_init(6 * k);
+  Graph *g = Graph_init (6 * k);
 
-	uint n, m, k4, k4p, k4m, i__, i__1, i__2, j;
+  uint n, m, k4, k4p, k4m, i__, i__1, i__2, j;
 
-	n = k * 6;
-	m = (k << 3) * k;
-	k4 = k << 2;
-	k4p = k4 + 1;
-	k4m = k4 - 1;
+  n = k * 6;
+  m = (k << 3) * k;
+  k4 = k << 2;
+  k4p = k4 + 1;
+  k4m = k4 - 1;
 
-	i__1 = k4m;
-	for (i__ = 1; i__ <= i__1; ++i__)
+  i__1 = k4m;
+  for (i__ = 1; i__ <= i__1; ++i__)
+    {
+      i__2 = k4;
+      for (j = i__ + 1; j <= i__2; ++j)
 	{
-		i__2 = k4;
-		for (j = i__ + 1; j <= i__2; ++j)
-		{
-			Graph_add_edge_(g, i__, j);
-		}
-		if (i__ % 2 == 1)
-		{
-			j = k4 + (i__ + 1) / 2;
-			Graph_add_edge_(g,i__,j);
-		}
+	  Graph_add_edge_ (g, i__, j);
 	}
+      if (i__ % 2 == 1)
+	{
+	  j = k4 + (i__ + 1) / 2;
+	  Graph_add_edge_ (g, i__, j);
+	}
+    }
 
-	return g;
+  return g;
 }

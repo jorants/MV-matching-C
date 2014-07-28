@@ -687,7 +687,7 @@ var e : edgeptr;
 
 
 
-begin 
+begin
    if high <> low then begin
      falsebloss := false;
      v := high;

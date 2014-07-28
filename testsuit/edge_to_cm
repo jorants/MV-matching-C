@@ -1,0 +1,11 @@
+
+
+#This shell file converts matching problems in the DIMACS input 
+#format (.edge) to problems for Rothberg's cardinality matching program
+#(edge costs are set to 1 in double.a)
+
+case $# in 
+0|1)  echo "Usage: edge_to_wmatch  input.edge  input.wmat"; exit 1
+esac
+
+awk -f double.a <$1 | sort +0 -1 | awk -f strip.a >$2

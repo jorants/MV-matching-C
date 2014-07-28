@@ -2,51 +2,55 @@
 
 #include "DDFSInfo.h"
 
-DDFSInfo *DDFSInfo_init(PointerList *petals)
+DDFSInfo *
+DDFSInfo_init (PointerList * petals)
 {
-    DDFSInfo *ddfsi = malloc(sizeof(DDFSInfo));
+  DDFSInfo *ddfsi = malloc (sizeof (DDFSInfo));
 
-    ddfsi->bStack = PointerList_init();
-    ddfsi->rStack = PointerList_init();
+  ddfsi->bStack = PointerList_init ();
+  ddfsi->rStack = PointerList_init ();
 
-    ddfsi->bNumUnexausted = 0;
-    ddfsi->rNumUnexausted = 0;
+  ddfsi->bNumUnexausted = 0;
+  ddfsi->rNumUnexausted = 0;
 
-    ddfsi->petal = Petal_init(petals);
+  ddfsi->petal = Petal_init (petals);
 
-    return ddfsi;
+  return ddfsi;
 }
 
-void DDFSInfo_delete(DDFSInfo *ddfsi)
+void
+DDFSInfo_delete (DDFSInfo * ddfsi)
 {
-    PointerList_delete(ddfsi->bStack);
-    PointerList_delete(ddfsi->rStack);
+  PointerList_delete (ddfsi->bStack);
+  PointerList_delete (ddfsi->rStack);
 
-    free(ddfsi);
+  free (ddfsi);
 }
 
-void DDFSInfo_push(DDFSInfo *ddfsi, DDFSColor color, NodeListIterator *itm)
+void
+DDFSInfo_push (DDFSInfo * ddfsi, DDFSColor color, NodeListIterator * itm)
 {
-    if (color == red)
+  if (color == red)
     {
-        PointerList_push(ddfsi->rStack, itm);
-        if (itm->next)
-            ddfsi->rNumUnexausted++;
+      PointerList_push (ddfsi->rStack, itm);
+      if (itm->next)
+	ddfsi->rNumUnexausted++;
     }
-    else if (color == blue)
+  else if (color == blue)
     {
-        PointerList_push(ddfsi->bStack, itm);
-        if (itm->next)
-            ddfsi->bNumUnexausted++;
+      PointerList_push (ddfsi->bStack, itm);
+      if (itm->next)
+	ddfsi->bNumUnexausted++;
     }
 }
 
-uint DDFSInfo_top(DDFSInfo *ddfsi, DDFSColor color)
+uint
+DDFSInfo_top (DDFSInfo * ddfsi, DDFSColor color)
 {
-	NodeListIterator *top;
-    if (color == red)
-        top = PointerList_top(ddfsi->rStack);
-    else if (color == blue)
-    	top = PointerList_top(ddfsi->bStack);
-    return top->value;
+  NodeListIterator *top;
+  if (color == red)
+    top = PointerList_top (ddfsi->rStack);
+  else if (color == blue)
+    top = PointerList_top (ddfsi->bStack);
+  return top->value;
 }
