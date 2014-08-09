@@ -36,8 +36,9 @@ def gengraph(v,e,k):
   return True
 
 
-for v in range(100,2000):
-  print(v,int(v*(v-1)/2))
-   for e in range(1,v*10,v):
-     for i in range(5):
+for v in range(500,1000):
+   print(v)
+   #for e in range(1,int(v*(v-1)/2) ):
+   e = 5*v
+   for i in range(10):
         gengraph(v,e,i)

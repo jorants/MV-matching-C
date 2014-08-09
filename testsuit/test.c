@@ -10,7 +10,7 @@
 
 int getmatchnum(char * fn, int * time)
 {
-   MVInfo *mvi = MVInfo_init_file(fn);
+  MVInfo *mvi = MVInfo_init_file(fn);
   struct timespec start, stop;
   clock_gettime(CLOCK_MONOTONIC, &start);
   EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
@@ -28,14 +28,14 @@ int getmatchnum(char * fn, int * time)
   Graph *g = mvi->graph;
   MVInfo_delete(mvi);
   Graph_delete(g);
-  return siz; 
+  return siz;
 }
 
 
 int getmatchnum_2(char * fn, int * time)
 {
-   MVInfo *mvi = MVInfo_init_file(fn);
-   mvi->pathc = 0;
+  MVInfo *mvi = MVInfo_init_file(fn);
+  mvi->pathc = 0;
   struct timespec start, stop;
   clock_gettime(CLOCK_MONOTONIC, &start);
   EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
@@ -53,7 +53,7 @@ int getmatchnum_2(char * fn, int * time)
   Graph *g = mvi->graph;
   MVInfo_delete(mvi);
   Graph_delete(g);
-  return siz; 
+  return siz;
 }
 
 
@@ -80,7 +80,7 @@ int getmatchnum_xxx(char * fn, int * time)
 {
   struct timespec start, stop;
   char *com = malloc( strlen(fn) + 30);
-  sprintf(com, "./testmatching %s  > /dev/null",  fn);
+  sprintf(com, "./testgraphs %s  > /dev/null",  fn);
   clock_gettime(CLOCK_MONOTONIC, &start);
   int succes = system(com);
   clock_gettime(CLOCK_MONOTONIC, &stop);
@@ -104,7 +104,7 @@ int getmatchnum_4(char * fn, int * time)
   sprintf(com, "./edge_to_cm %s tmp.txt > /dev/null",  fn);
   int succes = system("./match2 tmp.txt  > /dev/null");
   clock_gettime(CLOCK_MONOTONIC, &start);
- succes = system("./match2 tmp.txt  > /dev/null");
+  succes = system("./match2 tmp.txt  > /dev/null");
   clock_gettime(CLOCK_MONOTONIC, &stop);
   *time = (long)(stop.tv_sec- start.tv_sec) * 1000000LL + (long)(stop.tv_nsec-start.tv_nsec) / 1000LL;
   free(com);
@@ -122,6 +122,7 @@ int getmatchnum_4(char * fn, int * time)
 
 int main () // entry point of the program
 {
+  int trouble;
   // first off, we need to create a pointer to a directory
   DIR *pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
   struct dirent *pent = NULL;
@@ -146,23 +147,25 @@ int main () // entry point of the program
 
       int hits = sscanf(pent->d_name , "%i_%i_%i.txt", &m,&n,&a);
       if(hits>2){
-       char *fullpath = malloc( strlen(pent->d_name) + 9);
-       sprintf(fullpath, "graphs/%s",  pent->d_name);
-       int time,time2,time3,time4;
-       if(getmatchnum_xxx(fullpath,&time)){
-       int res =  getmatchnum(fullpath,  &time);
-       res =  getmatchnum_2(fullpath,  &time2);
-       int tmp =  getmatchnum_3(fullpath,  &time3);
-       tmp =  getmatchnum_3(fullpath,  &time4);
-       printf("%i %i %i %i %i %i %i %i\n", m,n,a,res,time,time2,time3,time4);
-	  }
-       free(fullpath);
+        char *fullpath = malloc( strlen(pent->d_name) + 9);
+        sprintf(fullpath, "graphs/%s",  pent->d_name);
+        int time,time2,time3,time4;
+        if(getmatchnum_xxx(fullpath,&time)){
+          int res =  getmatchnum(fullpath,  &time);
+          res =  getmatchnum_2(fullpath,  &time2);
+          int tmp =  getmatchnum_3(fullpath,  &time3);
+          tmp =  getmatchnum_3(fullpath,  &time4);
+          printf("%i %i %i %i %i %i %i %i\n", m,n,a,res,time,time2,time3,time4);
+        }else{
+          trouble++;
+	}
+        free(fullpath);
 
       }
     }
 
   // finally, let's close the directory
   closedir (pdir);
-
+  fprintf(stderr,"Errors: %i\n",trouble);
   return 0; // everything went OK
 }
