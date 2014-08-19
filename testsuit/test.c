@@ -7,7 +7,7 @@
 
 
 
-
+//this implementation with path compression
 int getmatchnum(char * fn, int * time)
 {
   MVInfo *mvi = MVInfo_init_file(fn);
@@ -31,7 +31,7 @@ int getmatchnum(char * fn, int * time)
   return siz;
 }
 
-
+//this implementation without path compression
 int getmatchnum_2(char * fn, int * time)
 {
   MVInfo *mvi = MVInfo_init_file(fn);
@@ -56,7 +56,7 @@ int getmatchnum_2(char * fn, int * time)
   return siz;
 }
 
-
+//fortran implementation
 int getmatchnum_3(char * fn, int * time)
 {
   struct timespec start, stop;
@@ -74,13 +74,12 @@ int getmatchnum_3(char * fn, int * time)
   return 0;
 }
 
-
-
-int getmatchnum_xxx(char * fn, int * time)
+//pascal implementation
+int getmatchnum_4(char * fn, int * time)
 {
   struct timespec start, stop;
   char *com = malloc( strlen(fn) + 30);
-  sprintf(com, "./testgraphs %s  > /dev/null",  fn);
+  sprintf(com, "./match3 < %s  > /dev/null",  fn);
   clock_gettime(CLOCK_MONOTONIC, &start);
   int succes = system(com);
   clock_gettime(CLOCK_MONOTONIC, &stop);
@@ -88,16 +87,13 @@ int getmatchnum_xxx(char * fn, int * time)
   free(com);
   if(succes!=0){
     *time = -1;
-    remove(fn);
-    return 0;
   }
-
-  return 1;
+  return 0;
 }
 
 
-
-int getmatchnum_4(char * fn, int * time)
+//V^4 implementation
+int getmatchnum_5(char * fn, int * time)
 {
   struct timespec start, stop;
   char *com = malloc( strlen(fn) + 30);
@@ -113,6 +109,30 @@ int getmatchnum_4(char * fn, int * time)
   }
 
   return 0;
+}
+
+
+
+
+//this implementation but removes non working graphs
+int getmatchnum_xxx(char * fn, int * time)
+{
+  struct timespec start, stop;
+  char *com = malloc( strlen(fn) + 30);
+  sprintf(com, "./testgraphs %s  > /dev/null",  fn);
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  int succes = system(com);
+  clock_gettime(CLOCK_MONOTONIC, &stop);
+  *time = (long)(stop.tv_sec- start.tv_sec) * 1000000LL + (long)(stop.tv_nsec-start.tv_nsec) / 1000LL;
+  free(com);
+  if(succes!=0){
+    *time = -1;
+    sprintf(com, "error/%s",  fn);
+    rename(fn,com);
+    return 0;
+  }
+
+  return 1;
 }
 
 
@@ -149,13 +169,14 @@ int main () // entry point of the program
       if(hits>2){
         char *fullpath = malloc( strlen(pent->d_name) + 9);
         sprintf(fullpath, "graphs/%s",  pent->d_name);
-        int time,time2,time3,time4;
+        int time,time2,time3,time4,time5;
         if(getmatchnum_xxx(fullpath,&time)){
           int res =  getmatchnum(fullpath,  &time);
           res =  getmatchnum_2(fullpath,  &time2);
-	  //          int tmp =  getmatchnum_3(fullpath,  &time3);
-          //tmp =  getmatchnum_3(fullpath,  &time4);
-          printf("%i %i %i %i %i %i\n", m,n,a,res,time,time2);
+	  int tmp =  getmatchnum_3(fullpath,  &time3);
+          tmp =  getmatchnum_3(fullpath,  &time4);
+          tmp =  getmatchnum_4(fullpath,  &time5);
+          printf("%i %i %i %i %i %i %i %i %i\n", m,n,a,res,time,time2,time3,time4,time5);
         }else{
           trouble++;
 	}
