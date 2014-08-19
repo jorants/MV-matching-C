@@ -153,9 +153,9 @@ int main () // entry point of the program
         if(getmatchnum_xxx(fullpath,&time)){
           int res =  getmatchnum(fullpath,  &time);
           res =  getmatchnum_2(fullpath,  &time2);
-          int tmp =  getmatchnum_3(fullpath,  &time3);
-          tmp =  getmatchnum_3(fullpath,  &time4);
-          printf("%i %i %i %i %i %i %i %i\n", m,n,a,res,time,time2,time3,time4);
+	  //          int tmp =  getmatchnum_3(fullpath,  &time3);
+          //tmp =  getmatchnum_3(fullpath,  &time4);
+          printf("%i %i %i %i %i %i\n", m,n,a,res,time,time2);
         }else{
           trouble++;
 	}
