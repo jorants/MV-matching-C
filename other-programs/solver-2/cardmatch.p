@@ -1296,9 +1296,9 @@ begin    (* match *)
 begin	(* fastmatch *)
     getgraph(vmin,emin,goodgraph);
     if goodgraph then begin
-        starttime := clock;
+        starttime := 0;
 	match(vmin,emin);
-        endtime := clock;
+        endtime := 1;
         fasttime := endtime-starttime;
         printmatch;
 	end;
