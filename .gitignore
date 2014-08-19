@@ -1,0 +1,9 @@
+/.kdev4/MV-matching-C.kdev4
+/MV-matching-C.kdev4
+/testsuit/gmon.out
+/scripts/big.txt
+/testsuit/test
+/testsuit/testgraphs
+doc/*
+*.o
+testsuit/graphs/*
