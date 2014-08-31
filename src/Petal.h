@@ -15,6 +15,7 @@ typedef struct
 {
   uint bluenode, rednode, base;
   uint link;
+  uint* linkholder;
   NodeList *support;
 } Petal;
 

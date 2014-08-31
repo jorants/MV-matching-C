@@ -150,7 +150,21 @@ uint
 DDFS_iterated_base (MVInfo * mvi, uint node)
 {
 
-  if (mvi->pathc)
+  if (mvi->pathc == 2){
+      uint * linkholder = mvi->links+node;
+      uint top = node;
+      Petal *p;
+      while (top != BLOSOM_DELETED && (p = mvi->v_info[top]->petal) != 0){
+	if (p->linkholder != NULL)
+	  top = *p->linkholder;
+	else
+	  top = p->base;
+        p->linkholder = linkholder;
+      }
+      *linkholder = top;
+      return top;
+
+    }else if(mvi->pathc)
     {
       uint top = node;
       Petal *p;
@@ -422,10 +436,10 @@ DDFS_close_petal (MVInfo * mvi, Petal * petal, uint tenacity, uint base,
 		  bool update_lists)
 {
   NodeListIterator *itr = petal->support->first;
-
+  uint node;
   while (itr)
     {
-      uint node = itr->value;
+      node = itr->value;
       VertexInfo *vi = mvi->v_info[node];
       vi->petal = petal;
       VertexInfo_set_tenacity (vi, tenacity);
@@ -456,7 +470,8 @@ DDFS_close_petal (MVInfo * mvi, Petal * petal, uint tenacity, uint base,
     }
 
   petal->base = base;
-
+  //  petal->linkholder = mvi->links+node;
+  //*(mvi->links+node) = base
 }
 
 

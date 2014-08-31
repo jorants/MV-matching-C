@@ -75,6 +75,8 @@ MVInfo_init (Graph * g)
   mvi->graph = g;
   mvi->v_info = malloc (sizeof (VertexInfo *) * g->size);
 
+  mvi->links = malloc (sizeof (int) * g->size);
+  
   for (i = 0; i < g->size; i++)
     mvi->v_info[i] = VertexInfo_init ();
 

@@ -34,6 +34,7 @@ typedef struct
 
   bool deleted;			// whether vertex has already participated in an augmenting path
 
+ 
   // list of nodes with a marked bridges towards this node,
   // whose tenacity can not be determined yet because this node
   // still didn't get its maxlevel
@@ -55,6 +56,8 @@ typedef struct
   Graph *graph;
   VertexInfo **v_info;
   bool pathc;
+
+  int * links; // array of links
 
   /// stores the nodes of different levels;
   /// a single node will be in at most two such levels (one even, one odd).

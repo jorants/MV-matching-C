@@ -12,7 +12,7 @@ main(int argc,char** argv)
 
   MVInfo *mvi = MVInfo_init_file(argv[1]);
 
-
+  mvi->pathc = 1;
   EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
   EdgeListIterator * current = matching->first;
   int siz = 0;

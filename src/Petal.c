@@ -16,6 +16,7 @@ Petal_init (PointerList * ptrs)
   ptl->bluenode = INFINITY;
   ptl->base = INFINITY;
   ptl->link = INFINITY;
+  ptl->linkholder = NULL;
 
   PointerList_add (ptrs, ptl);
 
