@@ -6,6 +6,21 @@
 #include "../bin/libmv.h"
 
 
+int graph_size = 0;
+int nedges = 0;
+
+void calcnums(Graph *g) {
+  graph_size = g->size;
+  nedges = 0;
+  int i = 0;
+  for (i = 0; i< graph_size; i++) {
+      NodeListIterator *edges = g->edges[i]->first;
+      while (edges) {
+	nedges++;
+	edges = edges->next;
+      }
+  }
+}
 
 //this implementation with path compression
 int getmatchnum(char * fn, int * time)
@@ -27,6 +42,7 @@ int getmatchnum(char * fn, int * time)
   // deallocate
   EdgeList_delete(matching);
   Graph *g = mvi->graph;
+  calcnums(g);
   MVInfo_delete(mvi);
   Graph_delete(g);
   return siz;
@@ -221,51 +237,33 @@ void cleanup(){
 }
 
 
-int main () // entry point of the program
+int main (int argc,char** argv) // entry point of the program
 {
   //  cleanup();
   int trouble;
   // first off, we need to create a pointer to a directory
   DIR *pdir = NULL; // remember, it's good practice to initialise a pointer to NULL!
   struct dirent *pent = NULL;
+  if (argc < 2) {
+    printf("1 arg input file");
+    return;
+  }
+  
+  char *arg = argv[1];
 
-
-  pdir = opendir ("graphs"); // "." will refer to the current directory
-  if (pdir == NULL) // if pdir wasn't initialised correctly
-    { // print an error message and exit the program
-      printf ("\nERROR! pdir could not be initialised correctly\n");
-      exit (3);
-    } // end if
-  int ant = 0;
-  while (pent = readdir (pdir)) // while there is still something in the directory to list
-    {
-      if (pent == NULL) // if pent has not been initialised correctly
-        { // print an error message, and exit the program
-          printf ("\nERROR! pent could not be initialised correctly\n");
-          exit (3);
-        }
-      // otherwise, it was initialised correctly. let's print it on the console:
-      int n,m,a;
-
-      int hits = sscanf(pent->d_name , "%i_%i_%i.txt", &m,&n,&a);
-      if(hits>2){
-        char *fullpath = malloc( strlen(pent->d_name) + 9);
-        sprintf(fullpath, "graphs/%s",  pent->d_name);
-        printf("%s\n",fullpath);
-        int time,time2,time3,time4,time5,time6;
-          int res =  getmatchnum(fullpath,  &time);
-          res =  getmatchnum_2(fullpath,  &time2);
-	  int tmp;
-	  // tmp =  getmatchnum_3(fullpath,  &time3);
-          // tmp =  getmatchnum_4(fullpath,  &time4);
-	  // tmp =  getmatchnum_5(fullpath,  &time5);
-          res =  getmatchnum_6(fullpath,  &time6);
-	  printf("%i %i %i %i %i %i %i %i %i %i\n", m,n,a,res,time,time2,time3,time4,time5,time6);
-          //printf("%i %i %i\n", time,time2 ,time3);
-        free(fullpath);
-
-      }
-    }
+  
+  // otherwise, it was initialised correctly. let's print it on the console:
+  int n,m,a;
+ int time,time2,time3,time4,time5,time6;
+    int res =  getmatchnum(arg,  &time);
+    res =  getmatchnum_2(arg,  &time2);
+    int tmp;
+    // tmp =  getmatchnum_3(arg,  &time3);
+    // tmp =  getmatchnum_4(arg,  &time4);
+    // tmp =  getmatchnum_5(arg,  &time5);
+    res =  getmatchnum_6(arg,  &time6);
+    printf("%i %i %i %i %i %i %i %i %i %i\n", graph_size,nedges,a,res,time,time2,time3,time4,time5,time6);
+    //printf("%i %i %i\n", time,time2 ,time3);
 
   // finally, let's close the directory
   closedir (pdir);
