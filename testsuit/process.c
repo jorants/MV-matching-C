@@ -256,13 +256,13 @@ int main (int argc,char** argv) // entry point of the program
   int n,m,a;
  int time,time2,time3,time4,time5,time6;
     int res =  getmatchnum(arg,  &time);
-    res =  getmatchnum_2(arg,  &time2);
+    int res2=  getmatchnum_2(arg,  &time2);
     int tmp;
     // tmp =  getmatchnum_3(arg,  &time3);
     // tmp =  getmatchnum_4(arg,  &time4);
     // tmp =  getmatchnum_5(arg,  &time5);
-    res =  getmatchnum_6(arg,  &time6);
-    printf("%i %i %i %i %i %i %i %i %i %i\n", graph_size,nedges,a,res,time,time2,time3,time4,time5,time6);
+    int res3 =  getmatchnum_6(arg,  &time6);
+    printf("%i %i %i %i %i %i %i %i %i\n", graph_size,nedges,a,res,res2,res3,time,time2,time6);
     //printf("%i %i %i\n", time,time2 ,time3);
 
   // finally, let's close the directory
