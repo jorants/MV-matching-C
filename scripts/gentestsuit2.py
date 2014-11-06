@@ -25,8 +25,8 @@ def gengraph(v,e,k):
   return True
 
 
-for v in range(10,500):
+for v in range(10,70):
    print(v)
-   for e in range(1,min(int(v*(v-1)/2),20), 1 ):
+   for e in range(1,int(v*(v-1)/2), int(v*(v-1)/20) ):
       for i in range(10):
          gengraph(v,e,i)
