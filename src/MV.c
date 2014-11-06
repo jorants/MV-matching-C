@@ -151,8 +151,10 @@ DDFS_iterated_base (MVInfo * mvi, uint node)
 {
 
   if (mvi->pathc == 2){
-      uint * linkholder = mvi->links+node;
+      //uint * linkholder = mvi->links+node;
       uint top = node;
+      uint * linkholder =   mvi->v_info[top]->petal->linkholder ? mvi->v_info[top]->petal->linkholder :  mvi->links+node;
+
       Petal *p;
       while (top != BLOSOM_DELETED && (p = mvi->v_info[top]->petal) != 0){
 	if (p->linkholder != NULL)
@@ -202,6 +204,7 @@ DDFS_iterated_base (MVInfo * mvi, uint node)
 
 
 // only used 200 times in 5000 random graphs, not worth to change with path compression
+// WRONG! NOTE: CAN NOT use path compression here, because the iteration does not allways go to the end
 uint
 DDFS_iterated_base_up_to (MVInfo * mvi, uint node, uint base)
 {
@@ -216,6 +219,23 @@ DDFS_iterated_base_up_to (MVInfo * mvi, uint node, uint base)
       top = p->base;
     }
   return top;
+}
+
+bool
+DDFS_iterates_to_base (MVInfo * mvi, uint node, uint base)
+{
+
+  uint top = node;
+  if (node == base)
+    return true;
+  Petal *p;
+  while ((p = mvi->v_info[top]->petal) != 0 && p->base != BLOSOM_DELETED)
+    {
+      top = p->base;
+      if (top == base)
+	return true;
+    }
+  return false;
 }
 
 /**
@@ -677,6 +697,25 @@ MV_append_path_downto_base (MVInfo * mvi, EdgeList * p, uint v, Petal * petal)
 NodeList *MV_base_to_entry_path (MVInfo * mvi, uint base, uint entry,
 				 uint parity);
 
+uint MV_get_predecessor_in_same_petal(MVInfo *mvi, VertexInfo *vi) {
+  NodeListIterator *itr = vi->predecessors->first;
+  
+  if ( !itr->next )
+    return itr->value;
+  
+  Petal *petal = vi->petal;
+  
+  while (itr) {
+    uint predecessor = itr->value;
+    if (DDFS_iterates_to_base(mvi, predecessor, petal->base)) {
+      return predecessor;
+    }
+    
+    itr = itr->next;
+  }
+  assert(0);
+}
+
 NodeList *
 MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
 			     uint parity)
@@ -691,11 +730,11 @@ MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
   // else:
   VertexInfo *entry_vi = mvi->v_info[entry];
   uint entry_min_level = VertexInfo_min_level (entry_vi);
-  if (entry_min_level % 2 == parity % 2)	// go straight down
+  if (entry_min_level % 2 == parity % 2)	// go straight down; FIXME: remove extra %2
     {
       assert (!NodeList_is_empty (entry_vi->predecessors));
 
-      uint predecessor = entry_vi->predecessors->first->value;
+      uint predecessor = MV_get_predecessor_in_same_petal(mvi, entry_vi);
       uint predecessor_iterated_base = DDFS_iterated_base_up_to (mvi,
 								 predecessor,
 								 first_base);
@@ -715,6 +754,7 @@ MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
 	    MV_base_to_entry_path (mvi, predecessor_iterated_base,
 				   predecessor, parity + 1);
 
+	  NodeList_pop(p2); // this prevents the predecessor_iterated_base node from appearing twice!
 	  NodeList_join (p, p2);
 	  NodeList_add (p, entry);
 	  return p;
