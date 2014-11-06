@@ -1,6 +1,6 @@
 .PHONY: default all clean doc lib test
 
-default: lib doc test
+default: lib test
 
 all: default
 
@@ -9,6 +9,7 @@ lib:
 
 test: lib
 	cd testsuit && make
+	cp bin/libmv.h testsuit
 
 clean:
 	rm -rf doc/*

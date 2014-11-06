@@ -20,7 +20,7 @@ main(int argc,char** argv)
     current = current-> next;
     siz++;
   }
-  printf("size: %i\n",siz);
+  printf("size: %i\ncount: %i\n",siz,mvi->matched_num);
   // deallocate
   EdgeList_delete(matching);
   Graph *g = mvi->graph;

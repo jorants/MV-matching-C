@@ -72,6 +72,8 @@ MVInfo_init (Graph * g)
   uint i;
   MVInfo *mvi = malloc (sizeof (MVInfo));
 
+  mvi->matched_num = 0;
+
   mvi->graph = g;
   mvi->v_info = malloc (sizeof (VertexInfo *) * g->size);
 
@@ -411,7 +413,6 @@ MVInfo_init_file (char *filename)
 
   Graph *g = Graph_init (size);
   MVInfo *mvi = MVInfo_init (g);
-
   char line[30];
   uint i, j, tmp;
   while ((fscanf (fp, "e %i %i %i\n", &i, &j, &tmp)) != EOF)

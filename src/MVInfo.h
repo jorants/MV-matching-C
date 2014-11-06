@@ -73,7 +73,7 @@ typedef struct
   /// current stage and level of the algorithm
   uint stage, level;
 
-
+  uint matched_num;
   EdgeList *redEdges, *blueEdges;
   Edge currentDDFSBridge;
   EdgeList *aug_path;

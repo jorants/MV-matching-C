@@ -258,7 +258,7 @@ int main () // entry point of the program
           //tmp =  getmatchnum_4(fullpath,  &time4);
 	  //tmp =  getmatchnum_5(fullpath,  &time5);
           res =  getmatchnum_6(fullpath,  &time6);
-          printf("%i %i %i %i %i %i %i %i %i %i\n", m,n,a,res,time,time2,time3,time4,time5,time6);
+          printf("%i %i %i %i %i %i %i %i %i %i\n", m,n,a,res,time,time2,0,0,0,time6);
           //printf("%i %i %i\n", time,time2 ,time3);
         free(fullpath);
 

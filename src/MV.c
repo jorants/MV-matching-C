@@ -972,7 +972,7 @@ MV_Augment (MVInfo * mvi, DDFSInfo * ddfsi)
       MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
       EdgeList_erase (mvi->aug_path);
     }
-
+  mvi->matched_num++;
   NodeList_delete (blue_path);
 
 
@@ -1018,7 +1018,7 @@ MV_MaximumCardinalityMatching_ (MVInfo * mvi)
 
   mvi->stage = 0;
 
-  while (found)
+  while (found && mvi->matched_num < mvi->graph->size/2)
     {				// for each stage
       found = false;
       for (mvi->level = 0; mvi->level < mvi->graph->size; mvi->level++)	// for each level
@@ -1043,7 +1043,8 @@ MV_MaximumCardinalityMatching_ (MVInfo * mvi)
 	  if (found)
 	    break;
 	}
-
+  //      if(!found)
+      //printf("ended on %i,%i\n",mvi->stage,mvi->level);
       MVInfo_next_stage (mvi);
     }
 
