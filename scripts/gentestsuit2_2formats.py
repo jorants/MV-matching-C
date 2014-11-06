@@ -36,11 +36,11 @@ def gengraph(v,e,k):
   writeGraph2(v,g.edges(), "out2/%i_%i_%i.txt" %(v,e,k))
   return True
 
-"""
+
 for v in range(10,60):
    print(v)
    for e in range(int(v*(v-1)/16),int(v*(v-1)/8), 1 ):
       for i in range(10):
          gengraph(v,e,i)
-"""
-gengraph(200,10000,1)
+
+# gengraph(200,10000,1)

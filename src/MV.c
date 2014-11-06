@@ -754,6 +754,7 @@ MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
 	    MV_base_to_entry_path (mvi, predecessor_iterated_base,
 				   predecessor, parity + 1);
 
+	  NodeList_pop(p2); // this prevents the predecessor_iterated_base node from appearing twice!
 	  NodeList_join (p, p2);
 	  NodeList_add (p, entry);
 	  return p;
