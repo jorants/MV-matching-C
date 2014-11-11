@@ -33,14 +33,14 @@ def gengraph(v,e,k):
   p = e/float(v*(v-1)/2)
   g = nx.gnp_random_graph(v,p)
   writeGraph(v,g.edges(), "out/%i_%i_%i.txt" %(v,e,k))
-  writeGraph2(v,g.edges(), "out2/%i_%i_%i.txt" %(v,e,k))
+  # writeGraph2(v,g.edges(), "out2/%i_%i_%i.txt" %(v,e,k))
   return True
 
 
 for v in range(10,60):
    print(v)
    for e in range(int(v*(v-1)/16),int(v*(v-1)/8), 1 ):
-      for i in range(10):
+      for i in range(2):
          gengraph(v,e,i)
 
 # gengraph(200,10000,1)
