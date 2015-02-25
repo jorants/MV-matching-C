@@ -14,7 +14,7 @@ all: default
 default: $(OBJECTS)
 	rm -f ../bin/libmv.a
 	ar -cvq ../bin/libmv.a $^
-	cpp -C MV.h | grep " uint" -A 10000  | grep -v "^#" > ../bin/libmv.h
+#	cpp -C MV.h | grep " uint" -A 10000  | grep -v "^#" > ../bin/libmv.h
 .PHONY: clean
 clean:
 	rm -f *.o *.a
