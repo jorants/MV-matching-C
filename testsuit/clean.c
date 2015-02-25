@@ -3,7 +3,9 @@
 #include <stdlib.h> // exit()
 #include <time.h>
 #include <string.h>
-#include "../bin/libmv.h"
+#include "../src/MV.h"
+#include "../src/MVInfo.h"
+#include "../src/Graph.h"
 
 
 
