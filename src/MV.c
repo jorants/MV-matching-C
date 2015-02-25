@@ -17,6 +17,9 @@ currStepPrintFile (char *path)
 }
 
 
+/**
+ * @return Returns true iff the i-j edge is matched
+ */
 bool
 MV_edge_matched (MVInfo * mvi, uint i, uint j)
 {
@@ -24,6 +27,9 @@ MV_edge_matched (MVInfo * mvi, uint i, uint j)
   return i_match == j;
 }
 
+/**
+ * Computes the tenacity of a given edge.
+ */
 uint
 MV_bridge_tenacity (MVInfo * mvi, uint i, uint j)
 {
@@ -36,6 +42,10 @@ MV_bridge_tenacity (MVInfo * mvi, uint i, uint j)
   return tenacity;
 }
 
+
+/**
+ * Processes the given edge in a BFS-search. See implementation for details.
+ */
 void
 MV_BFS_step_process_edge (MVInfo * mvi, uint i, uint j)
 {
@@ -45,7 +55,7 @@ MV_BFS_step_process_edge (MVInfo * mvi, uint i, uint j)
 			       mvi->v_info[j]->evenlevel : mvi->
 			       v_info[j]->oddlevel);
 
-  // Mark edge as bridge
+  // if j has a smaller min-level than level(i) + 1, we mark the i-j edge as bridge
   if (neighbourMinlevel <= level)
     {
       // if the neighbour already has the appropriate
@@ -85,11 +95,14 @@ MV_BFS_step_process_edge (MVInfo * mvi, uint i, uint j)
 	}
 
     }
-  // j already has level, i is another predecessor of j
+  // j already has minlevel and it equals level(i)+1, then i is another predecessor of j
   else if (neighbourMinlevel == level + 1)
     {
       NodeList_add (mvi->v_info[j]->predecessors, i);
     }
+  // if j has no minlevel yet, then i is the first predecessor of j
+  // we then store level(i)+1 as j's minlevel, and add j
+  // to the list of nodes having such a minlevel
   else if (neighbourMinlevel > level + 1)
     {
       if (level % 2 == 0)	// level is even
@@ -105,6 +118,10 @@ MV_BFS_step_process_edge (MVInfo * mvi, uint i, uint j)
 
 
 
+/**
+ * Does one step of the breadth-first-search. At even levels, unmatched edges are transversed, and at odd levels,
+ * the (single) matched edge is transversed. MV_BFS_step_process_edge is called on each transversed edge.
+ */
 void
 MV_BFS_step (MVInfo * mvi)
 {
@@ -146,6 +163,10 @@ MV_BFS_step (MVInfo * mvi)
 }
 
 
+/**
+ * Given a node, finds and returns base*(node), where base*(n) = n if n is a node that is not in a petal, and 
+ * base*(n) = base*(b) if n is a node which is in a petal with base b.
+ */
 uint
 DDFS_iterated_base (MVInfo * mvi, uint node)
 {
@@ -205,6 +226,10 @@ DDFS_iterated_base (MVInfo * mvi, uint node)
 
 // only used 200 times in 5000 random graphs, not worth to change with path compression
 // WRONG! NOTE: CAN NOT use path compression here, because the iteration does not allways go to the end
+
+/**
+ * Computes base*(node) up to, but excluding base (if node != base).
+ */
 uint
 DDFS_iterated_base_up_to (MVInfo * mvi, uint node, uint base)
 {
@@ -221,6 +246,9 @@ DDFS_iterated_base_up_to (MVInfo * mvi, uint node, uint base)
   return top;
 }
 
+/**
+ * @return Returns true iff base is an iterated base of node.
+ */
 bool
 DDFS_iterates_to_base (MVInfo * mvi, uint node, uint base)
 {
@@ -372,6 +400,10 @@ DDFS_next_node (MVInfo * mvi, PointerList * stack, uint * ptr_numUnexausted)
 
 }
 
+/**
+ * Changes the given node's collor, adds the node to the given petal, and set's the node's ddfs-predecessor...
+ * assuming that the node has not been coloured before. If it has, it does nothing.
+ */
 void
 DDFS_set_node_info (MVInfo * mvi, uint node, DDFSColor color, Petal * petal,
 		    uint ddfs_entry)
@@ -385,6 +417,11 @@ DDFS_set_node_info (MVInfo * mvi, uint node, DDFSColor color, Petal * petal,
     }
 }
 
+/**
+ * Backtracks along the ddfs-stack of the color new_route_color.
+ * center should be the bottleneck (the node that both red and blue
+ * are looking to go down through).
+ */
 bool
 DDFS_find_new_route (MVInfo * mvi, DDFSInfo * ddfsi, uint center,
 		     DDFSColor new_route_color)
@@ -495,6 +532,10 @@ DDFS_close_petal (MVInfo * mvi, Petal * petal, uint tenacity, uint base,
 }
 
 
+/**
+ * This implements the double-depth-first-search procedure, as defined by Micali and Vazirani.
+ * @param bridge the bridge from where the ddfs starts.
+ */
 bool
 MV_DDFS (MVInfo * mvi, Edge bridge)
 {
@@ -697,6 +738,10 @@ MV_append_path_downto_base (MVInfo * mvi, EdgeList * p, uint v, Petal * petal)
 NodeList *MV_base_to_entry_path (MVInfo * mvi, uint base, uint entry,
 				 uint parity);
 
+/**
+ * Given the VertexInfo for a given vertex that is part of some petal, returns 
+ * the BFS-predecessor of that vertex which is part of the same petal.
+ */
 uint MV_get_predecessor_in_same_petal(MVInfo *mvi, VertexInfo *vi) {
   NodeListIterator *itr = vi->predecessors->first;
   
@@ -716,6 +761,12 @@ uint MV_get_predecessor_in_same_petal(MVInfo *mvi, VertexInfo *vi) {
   assert(0);
 }
 
+
+/**
+ * Given a base of a petal (first_base) and an entry-point to that petal (i.e.,
+ * a vertex which is part of that petal), returns a path from the base to the entry-point
+ * of the given parity.
+ */
 NodeList *
 MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
 			     uint parity)
@@ -730,7 +781,7 @@ MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
   // else:
   VertexInfo *entry_vi = mvi->v_info[entry];
   uint entry_min_level = VertexInfo_min_level (entry_vi);
-  if (entry_min_level % 2 == parity % 2)	// go straight down; FIXME: remove extra %2
+  if (entry_min_level % 2 == parity % 2)	// go straight down
     {
       assert (!NodeList_is_empty (entry_vi->predecessors));
 
@@ -890,6 +941,11 @@ MV_first_base_to_entry_path (MVInfo * mvi, uint first_base, uint entry,
   return 0;
 }
 
+
+/**
+ * Given an iterated base of a petal (base) and a vertex (entry-point) for which base is an iterated base,
+ * returns a path from base to entry-point of the given parity.
+ */
 NodeList *
 MV_base_to_entry_path (MVInfo * mvi, uint base, uint entry, uint parity)
 {
@@ -952,6 +1008,13 @@ MV_unfold_stack (MVInfo * mvi, PointerList * stack)
   return path;
 }
 
+
+/**
+ * Given a DDFSInfo structure for a double-depth-first-search which succeeded in finding an augmenting path,
+ * changes the current matching by augmenting along that path.
+ * @param mvi Basic algorithm information
+ * @param path A DDFSInfo structure for a successful ddfs
+ */
 void
 MV_Augment (MVInfo * mvi, DDFSInfo * ddfsi)
 {
@@ -1018,6 +1081,10 @@ MV_Augment (MVInfo * mvi, DDFSInfo * ddfsi)
 
 }
 
+/**
+ * Returns a maximal matching for the graph with the given MVInfo.
+ * @param mvi Basic algorithm information
+ */
 void
 MV_maximalMatching (MVInfo * mvi)
 {
