@@ -48,7 +48,7 @@ typedef struct
 
 typedef struct EdgeListIterator
 {
-  EDGE_LIST_TYPE value;
+  Edge value;
   struct EdgeListIterator *next;
 } EdgeListIterator;
 

@@ -2,7 +2,10 @@
 #include <stdlib.h>
 
 
-#include "libmv.h"
+
+#include "../src/MV.h"
+#include "../src/MVInfo.h"
+#include "../src/Graph.h"
 
 
 main(int argc,char** argv)

@@ -9,7 +9,7 @@ lib:
 
 test: lib
 	cd testsuit && make
-	cp bin/libmv.h testsuit
+#	cp bin/libmv.h testsuit
 
 clean:
 	rm -rf doc/*
