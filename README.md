@@ -62,6 +62,8 @@ Then do some loop or something over your graph data, and for each edge (v1, v2) 
    Graph_add_edge(graph, v1, v2);
 ```
 
+(Of course, `v1`, `v2` are the numbers identifying the vertices in the edge.)
+
 When you've done that for all edges, call:
 
 ```
