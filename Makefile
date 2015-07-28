@@ -1,11 +1,14 @@
-.PHONY: default all clean doc lib test
+.PHONY: default all clean doc lib solvers test
 
-default: lib test
+default: lib solvers test
 
 all: default
 
 lib:
 	cd src && make
+
+solvers:
+	cd solvers && make
 
 test: lib
 	cd testsuit && make
@@ -19,3 +22,4 @@ clean:
 
 doc:
 	doxygen Doxyfile
+

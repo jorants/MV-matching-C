@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
 
   if (argc != 2) {
-    printf("Usage: match <name of file in DIMACS format>\n");
+    printf("Usage: %s <name of file in DIMACS format>\n", argv[0]);
     exit(-1);
   }
 
@@ -71,15 +71,19 @@ int main(int argc, char *argv[])
 
   edmonds_maximum_cardinality_matching(g, &mate[0]);
 
-  std::cout << std::endl << "Found a matching of size " << matching_size(g, &mate[0]) << std::endl;
+  // std::cout << std::endl << "Found a matching of size " << matching_size(g, &mate[0]) << std::endl;
 
-  std::cout << "The matching is:" << std::endl;
-  
+  // std::cout << "The matching is:" << std::endl;
+
+  int matchnum = 0;
   graph_traits<my_graph>::vertex_iterator vi, vi_end;
   for(boost::tie(vi,vi_end) = vertices(g); vi != vi_end; ++vi)
-    if (mate[*vi] != graph_traits<my_graph>::null_vertex() && *vi < mate[*vi])
-      std::cout << "{" << *vi << ", " << mate[*vi] << "}" << std::endl;
+    if (mate[*vi] != graph_traits<my_graph>::null_vertex() && *vi < mate[*vi]) {
+      // std::cout << "{" << *vi << ", " << mate[*vi] << "}" << std::endl;
+      matchnum++;
+    }
 
+  std::cout << matchnum;
   std::cout << std::endl;
 
   return 0;
