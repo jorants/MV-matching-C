@@ -14,6 +14,7 @@
 
 #include <boost/graph/max_cardinality_matching.hpp>
 
+#include <sys/time.h>
 
 using namespace boost;
 
@@ -31,33 +32,29 @@ int main(int argc, char *argv[])
   // It has a perfect matching of size 8. There are two isolated
   // vertices that we'll use later...
 
-
-  if (argc != 2) {
-    printf("Usage: %s <name of file in DIMACS format>\n", argv[0]);
-    exit(-1);
-  }
-
-  char *filename = argv[1];
-  
-  printf("Reading file: %s.\n", filename);
-  
   FILE *fp;
-  fp = fopen (filename, "r");
-
+  if (argc <2){
+    fp = stdin;
+  }else{
+    fp = fopen (argv[1], "r");
+  }
   uint size, numedge;
 
-  fscanf (fp, "p edge %d %d\n", &size, &numedge);
-
+  int res = fscanf (fp, "p edge %d %d\n", &size, &numedge);
+  
   my_graph g(size);
   char line[30];
   uint i, j, tmp;
+
   while ((fscanf (fp, "e %i %i %i\n", &i, &j, &tmp)) != EOF)
     {
+
       add_edge (i - 1, j - 1, g);
     }
 
-  fclose (fp);
-  
+  if(argc>=2) //dont close stdin
+    fclose (fp);
+
   // our vertices are stored in a vector, so we can refer to vertices
   // by integers in the range 0..15
 
@@ -69,22 +66,27 @@ int main(int argc, char *argv[])
   // matching returned is not actually a maximum cardinality matching
   // in the graph.
 
+  // times
+  struct timeval  tv1, tv2;
+
+  //start timing
+  gettimeofday(&tv1, NULL);
+
+
   edmonds_maximum_cardinality_matching(g, &mate[0]);
 
-  // std::cout << std::endl << "Found a matching of size " << matching_size(g, &mate[0]) << std::endl;
-
-  // std::cout << "The matching is:" << std::endl;
-
+  gettimeofday(&tv2, NULL);
+  double msec = (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + (double) (tv2.tv_sec - tv1.tv_sec);
+  printf("%f\n",msec);
+   
+  
   int matchnum = 0;
   graph_traits<my_graph>::vertex_iterator vi, vi_end;
   for(boost::tie(vi,vi_end) = vertices(g); vi != vi_end; ++vi)
     if (mate[*vi] != graph_traits<my_graph>::null_vertex() && *vi < mate[*vi]) {
-      // std::cout << "{" << *vi << ", " << mate[*vi] << "}" << std::endl;
-      matchnum++;
+        matchnum++;
     }
 
-  std::cout << matchnum;
-  std::cout << std::endl;
-
+  
   return 0;
 }  
