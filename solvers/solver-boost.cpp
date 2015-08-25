@@ -94,8 +94,15 @@ int main(int argc, char *argv[])
   // matching returned is not actually a maximum cardinality matching
   // in the graph.
 
+  clock_t start_time, finish_time;
+
+  start_time = clock();
+ 
   edmonds_maximum_cardinality_matching(*g, &mate[0]);
 
+  finish_time = clock();
+
+  
   // std::cout << std::endl << "Found a matching of size " << matching_size(g, &mate[0]) << std::endl;
 
   // std::cout << "The matching is:" << std::endl;
@@ -110,6 +117,7 @@ int main(int argc, char *argv[])
 
   std::cout << matchnum;
   std::cout << std::endl;
+  printf("The algorithm took %.3f seconds.\n", (double)(finish_time - start_time) / CLOCKS_PER_SEC);
 
   return 0;
 }  

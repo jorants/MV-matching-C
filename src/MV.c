@@ -401,7 +401,7 @@ DDFS_next_node (MVInfo * mvi, PointerList * stack, uint * ptr_numUnexausted)
 }
 
 /**
- * Changes the given node's collor, adds the node to the given petal, and set's the node's ddfs-predecessor...
+ * Changes the given node's color, adds the node to the given petal, and set's the node's ddfs-predecessor...
  * assuming that the node has not been coloured before. If it has, it does nothing.
  */
 void

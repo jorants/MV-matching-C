@@ -21,7 +21,13 @@ int main (int argc,char** argv) // entry point of the program
   MVInfo *mvi = MVInfo_init_file(filename);
   mvi->pathc = 1;
 
+  clock_t start_time, finish_time;
+  start_time = clock();
+
   EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
+  
+  finish_time = clock();
+  
   EdgeListIterator * current = matching->first;
   int siz = 0;
   while(current) {
@@ -35,6 +41,7 @@ int main (int argc,char** argv) // entry point of the program
   Graph_delete(g);
   
   printf("%d\n", siz);
+  printf("The algorithm took %.3f seconds.\n", (double)(finish_time - start_time) / CLOCKS_PER_SEC);
 
 
   return 0; // everything went OK
