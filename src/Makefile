@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -c -g -fPIC
+CFLAGS= -c -fPIC
 LIBS = -lm
 OBJECTS = $(patsubst %.c, %.o, $(wildcard *.c))
 
