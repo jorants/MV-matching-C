@@ -35,7 +35,7 @@ def WriteGraphData(V,E,fp):
     for x in E:
         fp.write("e %i %i 1\n" %(x[0]+1,x[1]+1))
 
-
+"""
 def solve_boost(g):
     pross = subprocess.Popen(["./solver-boost"],stdout = subprocess.PIPE,stdin = subprocess.PIPE)
     WriteGraphData(g.number_of_nodes(),g.edges(),pross.stdin)
@@ -46,15 +46,24 @@ def solve_libmv(g):
     WriteGraphData(g.number_of_nodes(),g.edges(),pross.stdin)
     res = pross.communicate()[0].strip()
     return float(res)
+"""
+
+def solve_boost(v,p):
+    pross = subprocess.Popen(["./boostrandom",str(v),str(p)],stdout = subprocess.PIPE)
+    return float(pross.communicate()[0].strip())
+
+def solve_libmv(v,p):
+    pross = subprocess.Popen(["./libmvrandom",str(v),str(p)],stdout = subprocess.PIPE)
+    res = pross.communicate()[0]
+    return float(res.strip())
 
 
-def runMultiple(v,times = 10,graph_meth = lambda v: gengraph_random(v,0.4*v*(v-1)*0.5)):
+def runMultiple(v,times = 10,p = lambda v: 0.4):
     boost_speed=  0
-    libmv_speed = 0
+    libmv_speed=  0
     for i in range(times):
-        g = graph_meth(v)
-        boost_speed+= solve_boost(g)
-        libmv_speed+= solve_libmv(g)
+        boost_speed+= solve_boost(v,p(v))
+        libmv_speed+= solve_libmv(v,p(v))
     return (boost_speed/times,libmv_speed/times)
         
     
@@ -68,18 +77,20 @@ def gengraph_random(v,e):
 
 
 def runrandoms():
-    xvals = list(range(10,50,1)) + list(range(50,100,5)) + list(range(100,200,10)) + list(range(200,1000,100)) + list(range(1000,10000,500))
-    yvalsboost = []
-    yvalslibmv = []
+    xvals = list(range(10,50,1)) + list(range(50,100,5)) + list(range(100,200,10)) + list(range(200,1000,100))
+    fp = open("output","a")
     for x in xvals:
         print x
-        res = runMultiple(x,10,lambda v: gengraph_random(v,0.4*(v*(v-1)*0.5)))
-        yvalsboost += [res[0]]
-        yvalslibmv += [res[1]]
-        
-    fp = open("output","w")
-    fp.write(str((xvals,yvalsboost,yvalslibmv)))
-
+        res = runMultiple(x,10,lambda v: 0.4)
+        fp.write("%i %f %f\n" % (x,res[0],res[1]))
+        fp.flush()
+    xvals = list(range(1000,10000,500)) + list(range(10000,100000,10000)) 
+    for x in xvals:
+        print x
+        res = runMultiple(x,1,lambda v: 0.4)
+        fp.write("%i %f %f\n" % (x,res[0],res[1]))
+        fp.flush()
+    fp.close()
 def runtrigs():
     xvals = list(range(50000,50001,1))
     yvalsboost = []

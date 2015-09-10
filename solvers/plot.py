@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-data  = eval(open("outputtrig").read())
+data  = filter(lambda x: len(x)>2,map(lambda x: x.split(" "),open("output").read().split("\n")))
 
 
 def interpol(datax,datay,xval):
@@ -13,20 +13,34 @@ def interpol(datax,datay,xval):
 
 
 xmin = data[0][0]
-xmax = data[0][-1]
+xmax = data[-1][0]
 
+
+
+x = []
+y1 = []
+y2 = []
+
+for line in data:
+    x+= [line[0]]
+    y1+= [line[1]]
+    y2+= [line[2]]
+
+
+
+data = (x,y1,y2)
 avrboost = 0
 avrlibmv = 0
 total = 0
-for i,x in enumerate(data[0]):
-
-    if x*2 > xmax:
+for i,t in enumerate(data[0]):
+    if t*2 > xmax:
         break
-    avrboost += interpol(data[0],data[1],2*x) / data[1][i]
-    avrlibmv += interpol(data[0],data[2],2*x) / data[2][i]
+    avrboost += interpol(data[0],data[1],2*t) / data[1][i]
+    avrlibmv += interpol(data[0],data[2],2*t) / data[2][i]
     total += 1
 
 import math
+print total
 power_boost =  math.log(avrboost/total,2)
 power_libmv =  math.log(avrlibmv/total,2)
 

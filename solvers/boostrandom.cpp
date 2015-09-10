@@ -26,38 +26,35 @@ typedef adjacency_list<vecS, vecS, undirectedS> my_graph;
 int main(int argc, char *argv[])
 {
 
-  // Create the following graph: (it'll look better when output
-  // to the terminal in a fixed width font...)
 
-  // It has a perfect matching of size 8. There are two isolated
-  // vertices that we'll use later...
 
-  FILE *fp;
-  if (argc <2){
-    fp = stdin;
-  }else{
-    fp = fopen (argv[1], "r");
+  if (argc <3){
+    printf("Not engough arguments\n Usage: %s [V] [p]\n",argv[0]);
   }
-  uint size, numedge;
-
-  int res = fscanf (fp, "p edge %d %d\n", &size, &numedge);
   
-  my_graph g(size);
-  char line[30];
-  uint i, j, tmp;
+  int V = atoi(argv[1]);
+  double p = atof(argv[2]);
+  
 
-  while ((fscanf (fp, "e %i %i %i\n", &i, &j, &tmp)) != EOF)
-    {
-      add_edge (i - 1, j - 1, g);
-    }
+  my_graph g(V);
 
-  if(argc>=2) //dont close stdin
-    fclose (fp);
+  srandom(7); //temp, change this to the time!
+  
+  int a,b;
+  for(a=0;a<V-1;a++)
+  {
+    for(b=a+1;b<V;b++)
+      {
+	if(((float)random())/(RAND_MAX) <= p)
+	    add_edge (a, b, g);
+      }
+  }
+
 
   // our vertices are stored in a vector, so we can refer to vertices
   // by integers in the range 0..15
 
-  std::vector<graph_traits<my_graph>::vertex_descriptor> mate(size);
+  std::vector<graph_traits<my_graph>::vertex_descriptor> mate(V);
 
   // find the maximum cardinality matching. we'll use a checked version
   // of the algorithm, which takes a little longer than the unchecked
