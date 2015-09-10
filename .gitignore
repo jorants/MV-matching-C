@@ -9,3 +9,8 @@
 doc/*
 *.o
 testsuit/graphs/*
+/solvers/solver-boost
+/solvers/solver-boost.cpp~
+/solvers/solver-lemon
+/solvers/solver-libmv
+/solvers/solver-libmv.c~
