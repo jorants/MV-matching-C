@@ -1,5 +1,5 @@
 all:
-	gcc -O3 -L ../bin -o solver-libmvrand libmvrandom.c -lmv 
+	gcc -O3 -L ../bin -o libmvrandom libmvrandom.c -lmv 
 
 
 clean:

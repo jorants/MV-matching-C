@@ -19,7 +19,7 @@
 using namespace boost;
 
 typedef adjacency_list<vecS, vecS, undirectedS> my_graph; 
-
+typedef std::vector<graph_traits<my_graph>::vertex_descriptor> my_matching;
 
 
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
   // our vertices are stored in a vector, so we can refer to vertices
   // by integers in the range 0..15
 
-  std::vector<graph_traits<my_graph>::vertex_descriptor> mate(size);
+  my_matching mate(size);
 
   // find the maximum cardinality matching. we'll use a checked version
   // of the algorithm, which takes a little longer than the unchecked

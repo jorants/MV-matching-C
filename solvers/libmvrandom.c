@@ -29,18 +29,12 @@ int main (int argc,char** argv) // entry point of the program
   srandom(7); //temp, change this to the time!
   
   int a,b,c;
-  c = 0;
   for(a=0;a<V-1;a++)
   {
     for(b=a+1;b<V;b++)
       {
 	if(((float)random())/(RAND_MAX) <= p){
-	  Graph_add_edge (g, a, b);
-	  if((mvi->v_info[a]->matched == UNMATCHED) && (mvi->v_info[b]->matched == UNMATCHED)){
-	    mvi->v_info[a]->matched = b;
-	    mvi->v_info[b]->matched = a;
-	    c++;
-	  }
+	  Graph_add_edge(g, a, b);
 	}
       }
   }
@@ -48,8 +42,12 @@ int main (int argc,char** argv) // entry point of the program
   mvi->output = false;
   MVInfo_next_stage (mvi);
   mvi->pathc = 1;
+
+
+
+
   
-  printf("%i\n",c);
+
 
 
   // times
@@ -59,6 +57,28 @@ int main (int argc,char** argv) // entry point of the program
   gettimeofday(&tv1, NULL);
 
 
+  c = 0;
+  /*
+  for(a=0;a<V-1;a++)
+    {
+      if((mvi->v_info[a]->matched == UNMATCHED)){
+	NodeListIterator * nli = g->edges[a]->first;
+	while(nli){
+	  b = nli->value;
+	  if((mvi->v_info[b]->matched == UNMATCHED)){
+	    mvi->v_info[a]->matched = b;
+	    mvi->v_info[b]->matched = a;
+	    c++;
+	    break;
+	  }
+	  nli = nli->next;
+	}
+      }
+      
+    }
+  printf("%i\n",c);
+  */
+  
   EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
 
   gettimeofday(&tv2, NULL);
