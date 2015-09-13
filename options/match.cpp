@@ -87,6 +87,7 @@ inline void edge_boost(my_graph * G,my_matching * M,int a,int b){
 }
 
 inline void edge_libmv(Graph *G,MVInfo * mvi,int a,int b){
+
   Graph_add_edge(G, a, b);
   if(matchonload == 1){
     if((mvi->v_info[a]->matched == UNMATCHED) && (mvi->v_info[b]->matched == UNMATCHED)){
@@ -210,7 +211,7 @@ int main (int argc,char** argv) // entry point of the program
       else edge_libmv(gmv,mvi,i-1,j-1);
     }
   }else{
-    srandom(7); //temp, change this to the time!
+    srandom(time(NULL));
 
     int a,b;
     for(a=0;a<v-1;a++)
@@ -240,7 +241,7 @@ int main (int argc,char** argv) // entry point of the program
       exit(1);
     }else{
       int a,b;
-      for(a=0;a<v-1;a++)
+      for(a=0;a<size-1;a++)
 	{
 	  if((mvi->v_info[a]->matched == UNMATCHED)){
 	    NodeListIterator * nli = gmv->edges[a]->first;
