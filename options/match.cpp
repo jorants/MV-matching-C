@@ -48,6 +48,7 @@ void showhelp(char *name){
   printf("The options are:\n");
   printf("  -r,--random               Generate a random graph (default)\n");
   printf("  -f,--file {filename}      Use {filename} as an input\n");
+  printf("  -s,--stdin                Use stdin as an input\n");
   printf("  -v,--size {number}        Make the random graph of size {size} (default = 100)\n");
   printf("  -p,--densness {perc}      {perc}%% of the edges will be added (default = 0.4)\n");
   printf("  -L,--match-on-load        While loading match as many adges as possible\n");
@@ -55,7 +56,7 @@ void showhelp(char *name){
   printf("  -a,--match-after-load     After loading \n");
   printf("  -b,--boost                Use the boost library \n");
   printf("  -m,--libmv                Use the libmv library (default)\n");
-  printf("  -l,--lemon                Use the libmv library (default)\n");
+  printf("  -l,--lemon                Use the lemon library\n");
   printf("  -h,--help                 Show this text\n");  
 }
 
@@ -72,6 +73,7 @@ int v = 100;
 float p = 0.4;
 char matchonload = 0;
 int use_lemon = 0;
+int use_file = 0;
 
 inline void edge_boost(my_graph * G,my_matching * M,int a,int b){
   add_edge (a, b, *G);
@@ -87,7 +89,6 @@ inline void edge_boost(my_graph * G,my_matching * M,int a,int b){
 }
 
 inline void edge_libmv(Graph *G,MVInfo * mvi,int a,int b){
-
   Graph_add_edge(G, a, b);
   if(matchonload == 1){
     if((mvi->v_info[a]->matched == UNMATCHED) && (mvi->v_info[b]->matched == UNMATCHED)){
@@ -116,12 +117,16 @@ int main (int argc,char** argv) // entry point of the program
       use_random = 1;
     }else if(strcmp(argv[i],"-f")==0 || strcmp(argv[i],"--file")==0){
       use_random = 0;
+      use_file = 1;
       if(i+1 == argc){
 	printf("need filename after %s\n",argv[i]);
 	return -1;
       }
       filename = argv[i+1];
       i++;
+    }else if(strcmp(argv[i],"-s")==0 || strcmp(argv[i],"--stdin")==0){
+      use_random = 0;
+      use_file = 0;
     }else if(strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--size")==0){
       if(i+1 == argc){
 	printf("need size after %s\n",argv[i]);
@@ -174,13 +179,17 @@ int main (int argc,char** argv) // entry point of the program
   my_matching *mb;
   Graph *gmv;
   MVInfo *mvi;
-
+  
   SmartGraph * gl;
   MaxMatching<SmartGraph> * ml;  
   // get the size
   if(use_random == 0){
-     fp = fopen (filename, "r");
-     fscanf (fp, "p edge %d %d\n", &size, &numedge);
+    if(use_file){
+      fp = fopen (filename, "r");
+    }else{
+      fp = stdin;
+    }
+    fscanf (fp, "p edge %d %d\n", &size, &numedge);
   }else{
     size = v;
   }
@@ -196,8 +205,7 @@ int main (int argc,char** argv) // entry point of the program
       gl->addNode();
   }else{
     gmv = Graph_init (size);
-    mvi = MVInfo_init (gmv);
-    
+    mvi = MVInfo_init(gmv);
   }
   
   gettimeofday(&startload, NULL);
@@ -264,7 +272,7 @@ int main (int argc,char** argv) // entry point of the program
   
   if((!use_boost) and (!use_lemon)){
     mvi->stage = -1;
-    mvi->output = false;
+    //mvi->output = false;
     MVInfo_next_stage (mvi);
     mvi->pathc = 1;
   }
