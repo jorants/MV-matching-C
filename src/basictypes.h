@@ -4,9 +4,12 @@
 #ifndef BASIC_TYPES_H
 #define BASIC_TYPES_H
 
+
 #include <stdbool.h>
 #include <assert.h>
 #include <stdio.h>
+
+#define assert(x)
 
 typedef unsigned int uint;
 #define INFINITY ((unsigned int) -1)

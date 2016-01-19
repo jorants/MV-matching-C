@@ -99,6 +99,17 @@ inline void edge_libmv(Graph *G,MVInfo * mvi,int a,int b){
     }
   }
 }
+
+inline void match_libmv(Graph *G,MVInfo * mvi,int a,int b){
+  Graph_add_edge(G, a, b);
+  if((mvi->v_info[a]->matched == UNMATCHED) && (mvi->v_info[b]->matched == UNMATCHED)){
+      	    mvi->v_info[a]->matched = b;
+	    mvi->v_info[b]->matched = a;
+	    c++;
+	    mvi->matched_num++;
+  }
+}
+
 inline void edge_lemon(SmartGraph *G,int a,int b){
   G->addEdge(G->nodeFromId(a), G->nodeFromId(b));
   if(matchonload == 1){
@@ -214,8 +225,9 @@ int main (int argc,char** argv) // entry point of the program
     int i,j,tmp;
     while ((fscanf (fp, "e %i %i %i\n", &i, &j, &tmp)) != EOF)
     {
+      
       if(use_boost) edge_boost(gb,mb,i-1,j-1);
-      else if (use_lemon) edge_lemon(gl,i-1,j-1);
+      else if(use_lemon) edge_lemon(gl,i-1,j-1);
       else edge_libmv(gmv,mvi,i-1,j-1);
     }
   }else{
@@ -272,7 +284,6 @@ int main (int argc,char** argv) // entry point of the program
   
   if((!use_boost) and (!use_lemon)){
     mvi->stage = -1;
-    //mvi->output = false;
     MVInfo_next_stage (mvi);
     mvi->pathc = 1;
   }

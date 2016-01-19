@@ -86,6 +86,7 @@ typedef struct
 } MVInfo;
 
 MVInfo *MVInfo_init (Graph * g);
+MVInfo *MVInfo_init_output (Graph * g,char* path);
 void MVInfo_delete (MVInfo * mvi);
 void MVInfo_next_stage (MVInfo * mvi);
 void MVInfo_next_level (MVInfo * mvi);

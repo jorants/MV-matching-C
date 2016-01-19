@@ -222,6 +222,7 @@ void
 MVInfo_print_graphviz (MVInfo * mvi, char *filename)
 {
   FILE *fp;
+  printf("%s\n",filename);
   fp = fopen (filename, "w");
 
   fprintf (fp, "strict graph\n{\n");

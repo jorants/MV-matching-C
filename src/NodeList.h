@@ -36,9 +36,9 @@ typedef struct
 } NodeList;
 
 NodeList *NodeList_init ();
-void NodeList_delete (NodeList * lst);
+inline void NodeList_delete (NodeList * lst);
 
-bool NodeList_is_empty (NodeList * lst);
+inline bool NodeList_is_empty (NodeList * lst);
 bool NodeList_is_empty_or_singleton (NodeList * lst);
 
 void NodeList_add (NodeList * lst, LIST_TYPE elm);
