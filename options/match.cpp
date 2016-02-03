@@ -91,11 +91,13 @@ inline void edge_boost(my_graph * G,my_matching * M,int a,int b){
 inline void edge_libmv(Graph *G,MVInfo * mvi,int a,int b){
   Graph_add_edge(G, a, b);
   if(matchonload == 1){
+
     if((mvi->v_info[a]->matched == UNMATCHED) && (mvi->v_info[b]->matched == UNMATCHED)){
-      	    mvi->v_info[a]->matched = b;
-	    mvi->v_info[b]->matched = a;
-	    c++;
-	    mvi->matched_num++;
+      //printf("Matching: %i %i \n",a,b);
+      mvi->v_info[a]->matched = b;
+      mvi->v_info[b]->matched = a;
+      c++;
+      mvi->matched_num++;
     }
   }
 }
@@ -103,10 +105,11 @@ inline void edge_libmv(Graph *G,MVInfo * mvi,int a,int b){
 inline void match_libmv(Graph *G,MVInfo * mvi,int a,int b){
   Graph_add_edge(G, a, b);
   if((mvi->v_info[a]->matched == UNMATCHED) && (mvi->v_info[b]->matched == UNMATCHED)){
-      	    mvi->v_info[a]->matched = b;
-	    mvi->v_info[b]->matched = a;
-	    c++;
-	    mvi->matched_num++;
+    //printf("Matching: %i %i \n",a,b);
+    mvi->v_info[a]->matched = b;
+    mvi->v_info[b]->matched = a;
+    c++;
+    mvi->matched_num++;
   }
 }
 
@@ -228,7 +231,13 @@ int main (int argc,char** argv) // entry point of the program
       
       if(use_boost) edge_boost(gb,mb,i-1,j-1);
       else if(use_lemon) edge_lemon(gl,i-1,j-1);
-      else edge_libmv(gmv,mvi,i-1,j-1);
+      else{
+	if(tmp == -1){
+	  match_libmv(gmv,mvi,i-1,j-1);
+	}else{
+	  edge_libmv(gmv,mvi,i-1,j-1);
+	}
+      }
     }
   }else{
     srandom(time(NULL));

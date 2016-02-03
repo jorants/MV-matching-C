@@ -134,7 +134,9 @@ MV_BFS_step (MVInfo * mvi)
     {
       while (itr)
 	{
+	  
 	  uint i = itr->value;
+
 	  uint matched = mvi->v_info[i]->matched;
 	  NodeListIterator *neighbourItr = mvi->graph->edges[i]->first;
 	  while (neighbourItr)
@@ -296,6 +298,7 @@ DDFS_set_predecessor (MVInfo * mvi, uint vertex, uint predecessor)
  */ bool
 DDFS_backtrack (MVInfo * mvi, PointerList * stack, uint * numUnexausted)
 {
+
   if (*numUnexausted == 0)
     return false;
 
@@ -313,6 +316,7 @@ DDFS_backtrack (MVInfo * mvi, PointerList * stack, uint * numUnexausted)
 	PointerList_pop (stack);
       else
 	{
+
 	  // look for first non-deleted brother
 	  while (brother
 		 && DDFS_iterated_base (mvi, brother->value)
@@ -527,6 +531,7 @@ DDFS_close_petal (MVInfo * mvi, Petal * petal, uint tenacity, uint base,
     }
 
   petal->base = base;
+
   //  petal->linkholder = mvi->links+node;
   //*(mvi->links+node) = base
 }
@@ -1046,17 +1051,16 @@ MV_Augment (MVInfo * mvi, DDFSInfo * ddfsi)
 	}
       MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
       EdgeList_erase (mvi->aug_path);
-      printf ("Aug. Path: ");
     }
 
   // do the actual augmentation
 
   itr = blue_path->first;
-
+  
   while (itr)
     {
       uint v1 = itr->value;
-
+      
       itr = itr->next;
       assert (itr != 0);
       uint v2 = itr->value;
@@ -1124,7 +1128,7 @@ MV_MaximumCardinalityMatching_ (MVInfo * mvi)
   bool found = true;
 
   mvi->stage = 0;
-
+  int last_level;
   while (found && mvi->matched_num < mvi->graph->size/2)
     {				// for each stage
       found = false;
@@ -1147,8 +1151,10 @@ MV_MaximumCardinalityMatching_ (MVInfo * mvi)
 	      eitr = eitr->next;
 	    }
 
-	  if (found)
+	  if (found){
+	    printf("%i\n",mvi->level);
 	    break;
+	  }
 	}
   //      if(!found)
       //printf("ended on %i,%i\n",mvi->stage,mvi->level);
