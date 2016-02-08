@@ -110,6 +110,11 @@ MVInfo *MVInfo_init_file_simple (char *filename);
 */
 MVInfo *MVInfo_init_file (char *filename);
 
+/**
+ Allows outputting graphviz status reports.
+*/
+void MVInfo_set_output ( MVInfo *mvi, char *path  );
+
 
 
 #endif // MVINFO_H

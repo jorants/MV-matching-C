@@ -14,3 +14,7 @@ testsuit/graphs/*
 /solvers/solver-lemon
 /solvers/solver-libmv
 /solvers/solver-libmv.c~
+/solvers/solver-libmv-print
+/solvers/mv_progress/*
+/bin/libmv.a
+/bin/libmv.h

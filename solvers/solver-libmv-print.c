@@ -9,6 +9,7 @@
 #include "../src/Graph.h"
 
 
+
 int main (int argc,char** argv) // entry point of the program
 {
   if (argc != 2) {
@@ -18,13 +19,18 @@ int main (int argc,char** argv) // entry point of the program
 
   char *filename = argv[1];
   
+  if (!file_exists(filename)){
+      printf("No such file %s\n", filename);
+      exit(-1);
+  }
+  
   MVInfo *mvi = MVInfo_init_file(filename);
   mvi->pathc = 1;
 
   clock_t start_time, finish_time;
   start_time = clock();
 
-  
+  MVInfo_set_output(mvi, "mv_progress");
   EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
   
   finish_time = clock();

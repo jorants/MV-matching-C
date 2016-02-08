@@ -117,6 +117,13 @@ MVInfo *
 MVInfo_init_output ( Graph * g, char *path )
 {
     MVInfo *mvi = MVInfo_init ( g );
+    MVInfo_set_output(mvi, path);
+    return mvi;
+}
+
+void
+MVInfo_set_output ( MVInfo *mvi, char *path  )
+{
     mvi->redEdges = EdgeList_init ();
     mvi->blueEdges = EdgeList_init ();
     mvi->currentDDFSBridge.v1 = INFINITY;
@@ -124,7 +131,6 @@ MVInfo_init_output ( Graph * g, char *path )
     mvi->aug_path = EdgeList_init ();
     mvi->output = true;
     mvi->outpath = path;
-    return mvi;
 }
 
 void
