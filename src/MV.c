@@ -545,7 +545,6 @@ bool
 MV_DDFS (MVInfo * mvi, Edge bridge)
 {
   bool found = false;
-
   if (mvi->output)
     {
       printf ("Bridge: %d -- %d\n", bridge.v1, bridge.v2);
@@ -569,13 +568,13 @@ MV_DDFS (MVInfo * mvi, Edge bridge)
   NodeListIterator reditr = {.value = rednode,.next = 0 };
   DDFSInfo_push (ddfsi, red, &reditr);
 
-
   while (true)
     {
       if (mvi->output)
 	{
 	  MVInfo_print_graphviz (mvi, currStepPrintFile (mvi->outpath));
 	}
+
       uint btop_entry = DDFSInfo_top (ddfsi, blue);
       uint rtop_entry = DDFSInfo_top (ddfsi, red);
 
@@ -1152,7 +1151,6 @@ MV_MaximumCardinalityMatching_ (MVInfo * mvi)
 	    }
 
 	  if (found){
-	    printf("%i\n",mvi->level);
 	    break;
 	  }
 	}

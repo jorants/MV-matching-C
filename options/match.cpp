@@ -63,6 +63,10 @@ void showhelp(char *name){
 
 typedef adjacency_list<vecS, vecS, undirectedS> my_graph;
 typedef std::vector<graph_traits<my_graph>::vertex_descriptor> my_matching;
+typedef lemon::SmartGraph LemonGraph;
+typedef LemonGraph::Edge LemonEdge;
+typedef LemonGraph::Node LemonNode;
+typedef lemon::MaxMatching<LemonGraph> LemonMatching;
 
 
 int c = 0;
@@ -113,12 +117,12 @@ inline void match_libmv(Graph *G,MVInfo * mvi,int a,int b){
   }
 }
 
-inline void edge_lemon(SmartGraph *G,int a,int b){
-  G->addEdge(G->nodeFromId(a), G->nodeFromId(b));
-  if(matchonload == 1){
-    printf("Matching during load not supported for lemon\n");
-    exit(-1);
-  }
+
+
+inline void edge_lemon(LemonGraph *G,int a,int b){
+  LemonEdge edge =  G->addEdge(G->nodeFromId(a), G->nodeFromId(b));
+  
+  
 }
 
 
@@ -193,9 +197,10 @@ int main (int argc,char** argv) // entry point of the program
   my_matching *mb;
   Graph *gmv;
   MVInfo *mvi;
+
   
-  SmartGraph * gl;
-  MaxMatching<SmartGraph> * ml;  
+  LemonGraph * gl;
+  MaxMatching<LemonGraph> *  ml;
   // get the size
   if(use_random == 0){
     if(use_file){
@@ -217,6 +222,7 @@ int main (int argc,char** argv) // entry point of the program
     int k;
     for(k-0;k<size;k++)
       gl->addNode();
+
   }else{
     gmv = Graph_init (size);
     mvi = MVInfo_init(gmv);
@@ -266,8 +272,8 @@ int main (int argc,char** argv) // entry point of the program
       printf("Combination of boost and match after load is not supported\n");
       exit(1);
     }else if (use_lemon){
-      printf("Combination of lemon and match after load is not supported\n");
-      exit(1);
+      ml = new MaxMatching<SmartGraph>(*gl);
+      ml->greedyInit();
     }else{
       int a,b;
       for(a=0;a<size-1;a++)
@@ -301,8 +307,13 @@ int main (int argc,char** argv) // entry point of the program
   if(use_boost){
     edmonds_maximum_cardinality_matching(*gb, &(*mb)[0]);
   }else if(use_lemon){
-    ml = new MaxMatching<SmartGraph>(*gl);
-    ml->run();
+    
+
+    if(matchonload!= 2){
+      ml = new MaxMatching<SmartGraph>(*gl);
+      ml->init();
+    }
+    ml->startDense();
   }else{
       EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
   }
