@@ -5,20 +5,20 @@
 #include "libmv.h"
 
 
-main(int argc,char** argv)
+int main(int argc,char** argv)
 {
 
-  //Load a graph file in DIRAC format
-  MVInfo *mvi = MVInfo_init_file(argv[1]);
+  //Load a graph file in SIMPLE format
+  Graph *g = Graph_init_file_simple(argv[1]);
 
   // Does the actual matching:
-  EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
+  EdgeList *matching = MV_MaximumCardinalityMatching(g);
 
   //Get head of edgelist
   EdgeListIterator * current = matching->first;
   int size = 0;
   while(current) {
-    printf("matched: %i  %i\n",current->v1,current->v2)
+    printf("matched: %i  %i\n",current->value.v1,current->value.v2);
     current = current-> next;
     size++;
   }
@@ -26,8 +26,6 @@ main(int argc,char** argv)
 
   // deallocate
   EdgeList_delete(matching);
-  Graph *g = mvi->graph;
-  MVInfo_delete(mvi);
   Graph_delete(g);
 
   return 0;

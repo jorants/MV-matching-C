@@ -27,6 +27,7 @@ void Graph_add_edge (Graph * g, uint v1, uint v2);
 NodeListIterator *Graph_neighbours (Graph * g, uint v);
 
 Graph *Graph_init_file (char *filename);
+Graph *Graph_init_file_simple (char *filename);
 Graph *Graph_init_triangles (uint k);
 Graph *Graph_init_triangles2 (uint k);
 Graph *Graph_init_hardcard (uint k);
