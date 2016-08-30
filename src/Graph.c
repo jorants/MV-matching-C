@@ -66,6 +66,53 @@ Graph_neighbours (Graph * g, uint v)
   return g->edges[v]->first;
 }
 
+Graph *
+Graph_init_file (char *filename)
+{
+  FILE *fp;
+  fp = fopen (filename, "r");
+
+  uint size, numedge;
+
+  fscanf (fp, "p edge %d %d\n", &size, &numedge);
+
+  Graph *g = Graph_init (size);
+  char line[30];
+  uint i, j, tmp;
+  while ((fscanf (fp, "e %i %i %i\n", &i, &j, &tmp)) != EOF)
+    {
+      Graph_add_edge (g, i - 1, j - 1);
+    }
+
+  fclose (fp);
+
+  return g;
+}
+
+Graph *
+Graph_init_file_simple (char *filename)
+{
+  FILE *fp;
+  fp = fopen (filename, "r");
+
+  uint size;
+
+  fscanf (fp, "%d\n\n", &size);
+
+  Graph *g = Graph_init (size);
+
+  char line[10];
+  uint i, j;
+  while ((fscanf (fp, "%u %[-] %u\n", &i, line, &j)) != EOF)
+    {
+      Graph_add_edge (g, i, j);
+    }
+
+  fclose (fp);
+
+  return g;
+}
+
 /**
  * GENERATES A CHAIN OF TRIANGLES CONNECTED AT ONE VERTEX
  EXAMPLE:

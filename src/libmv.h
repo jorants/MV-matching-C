@@ -58,6 +58,11 @@ typedef struct
 } EdgeList;
 
 Graph *Graph_init (unsigned int size);
+Graph *Graph_init_file (char *filename);
+Graph *Graph_init_file_simple (char *filename);
+Graph *Graph_init_triangles (uint k);
+Graph *Graph_init_triangles2 (uint k);
+Graph *Graph_init_hardcard (uint k);
 
 void Graph_add_edge (Graph * g, unsigned int v1, unsigned int v2);
 

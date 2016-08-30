@@ -22,8 +22,6 @@ matching_from_networkx(PyObject* self, PyObject* args)
   edgesL = PyList_Size(pedges);
 
   Graph *g = Graph_init (size);
-  MVInfo *mvi = MVInfo_init (g);
-
 
   int i;
   PyObject * cur_edge;
@@ -35,14 +33,17 @@ matching_from_networkx(PyObject* self, PyObject* args)
     Graph_add_edge (g, a, b);
   }
 
-  mvi->stage = -1;
-  mvi->output = 0;
-  MVInfo_next_stage (mvi);
-
-  mvi->pathc = 1;
-  EdgeList *matching = MV_MaximumCardinalityMatching_(mvi);
+  EdgeList *matching = MV_MaximumCardinalityMatching(g);
   EdgeListIterator * current = matching->first;
-  int match_num = mvi->matched_num;
+
+  int match_num = 0;
+  while (current) {
+    ++match_num;
+    current = current->next;
+  }
+
+  current = matching->first;
+
   PyObject * list =  PyList_New(match_num);
   i =0;
   while(current) {
@@ -59,7 +60,6 @@ matching_from_networkx(PyObject* self, PyObject* args)
   }
   // deallocate
   EdgeList_delete(matching);
-  MVInfo_delete(mvi);
   Graph_delete(g);
   //  return mvi;
   //Py_RETURN_NONE;
@@ -73,7 +73,7 @@ static PyMethodDef MVMethods[] =
   };
  
 PyMODINIT_FUNC
-inithello(void)
+initmv(void)
 {
   (void) Py_InitModule("mv", MVMethods);
 }
