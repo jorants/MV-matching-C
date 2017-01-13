@@ -4,16 +4,7 @@ The code is currently in an early stage and although the algorithm is implemente
 
 It may currently be used as a C library, and it is possible to make pictures of the algorithm as it progresses. There are currently no bugs or show-stoppers that we know of, though the library could still use several improvements.
 
-Throughout the first half of 2015:
-
-1. The code will be cleaned-up and documented
-
-2. There will be a nice program for the console, so that you may interface with the library properly.
-
-3. The test suite will be improved
-
-4. We will make a performance comparison with other implementations
-
+A faster, optimized implementation of the algorithm appears in https://github.com/jorants/MV-Matching-V2
 
 # Obtaining the code and compiling it
 
