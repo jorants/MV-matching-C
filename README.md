@@ -1,3 +1,5 @@
+REDIRECT: https://github.com/jorants/MV-Matching-V2
+
 This git repository used to contain an implementation of the **Micali Vazirani Maximum Cardinality Matching Algorithm**.
 
 The code is currently in an early stage and although the algorithm is implemented and seems to work, it really isn't user friendly.
